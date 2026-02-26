@@ -15,7 +15,8 @@
       "Bash(npm install tailwindcss@3)",
       "Bash(npm run dev)",
       "Bash(git commit -m \"fix: downgrade tailwindcss a v3\")",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(tree backend/ -a)"
     ],
     "deny": [],
     "ask": []
