@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create vite@latest frontend -- --template react-ts)",
+      "Bash(npm install tailwindcss postcss autoprefixer react-router-dom axios)",
+      "Bash(mkdir -p src/components src/pages src/hooks src/services src/utils src/context src/types)",
+      "Bash(npx tailwindcss init -p)",
+      "Bash(npm run tailwindcss init -p)",
+      "Bash(git add .)",
+      "Bash(git commit -m \"feat: inizializzazione progetto frontend e backend\")",
+      "Bash(git branch -M main)",
+      "Bash(git remote add origin https://github.com/Raptorz96/docufiscal)",
+      "Bash(git push -u origin main)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
