@@ -10,7 +10,10 @@
       "Bash(git commit -m \"feat: inizializzazione progetto frontend e backend\")",
       "Bash(git branch -M main)",
       "Bash(git remote add origin https://github.com/Raptorz96/docufiscal)",
-      "Bash(git push -u origin main)"
+      "Bash(git push -u origin main)",
+      "Bash(npm uninstall tailwindcss)",
+      "Bash(npm install tailwindcss@3)",
+      "Bash(npm run dev)"
     ],
     "deny": [],
     "ask": []
