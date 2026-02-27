@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth_router, clienti_router, tipi_contratto_router
+from app.api import auth_router, clienti_router, tipi_contratto_router, contratti_router
 
 app = FastAPI(
     title="DocuFiscal API",
@@ -21,6 +21,7 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(clienti_router, prefix="/api/v1")
 app.include_router(tipi_contratto_router, prefix="/api/v1")
+app.include_router(contratti_router, prefix="/api/v1")
 
 @app.get("/api/v1/health")
 async def health_check():
