@@ -27,9 +27,11 @@ Setup iniziale del progetto full-stack con autenticazione base.
 - SessionLocal, Base (DeclarativeBase), get_db dependency
 - Esportati da core/__init__.py
 
-### Task 5 — Setup Alembic
-- [ ] Inizializzazione Alembic
-- [ ] Configurazione env.py e alembic.ini
+### Task 5 ✅ — Setup Alembic
+- alembic init con env.py configurato
+- URL da settings (non hardcoded in alembic.ini)
+- target_metadata = Base.metadata
+- Nessuna migrazione creata (attende modelli)
 
 ### Task 6 — Modello Utente
 - [ ] User model SQLAlchemy

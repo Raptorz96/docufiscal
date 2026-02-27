@@ -1,7 +1,5 @@
 """Alembic environment configuration for DocuFiscal application."""
-import logging
 from logging.config import fileConfig
-from typing import Any
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
