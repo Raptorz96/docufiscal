@@ -1,22 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm create vite@latest frontend -- --template react-ts)",
-      "Bash(npm install tailwindcss postcss autoprefixer react-router-dom axios)",
-      "Bash(mkdir -p src/components src/pages src/hooks src/services src/utils src/context src/types)",
-      "Bash(npx tailwindcss init -p)",
-      "Bash(npm run tailwindcss init -p)",
-      "Bash(git add .)",
-      "Bash(git commit -m \"feat: inizializzazione progetto frontend e backend\")",
-      "Bash(git branch -M main)",
-      "Bash(git remote add origin https://github.com/Raptorz96/docufiscal)",
-      "Bash(git push -u origin main)",
-      "Bash(npm uninstall tailwindcss)",
-      "Bash(npm install tailwindcss@3)",
-      "Bash(npm run dev)",
-      "Bash(git commit -m \"fix: downgrade tailwindcss a v3\")",
-      "Bash(git push)",
-      "Bash(tree backend/ -a)"
+      "Bash(sqlite3 docufiscal.db \"CREATE TABLE users (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    email VARCHAR(255) NOT NULL UNIQUE,\n    hashed_password VARCHAR(255) NOT NULL,\n    nome VARCHAR(100) NOT NULL,\n    cognome VARCHAR(100) NOT NULL,\n    role VARCHAR(50) NOT NULL DEFAULT ''commercialista'',\n    is_active BOOLEAN NOT NULL DEFAULT 1,\n    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n);\n\nCREATE INDEX ix_users_email ON users (email);\")",
+      "Bash(python3 -c \"\nimport sqlite3\n\n# Create database and users table\nconn = sqlite3.connect(''docufiscal.db'')\ncursor = conn.cursor()\n\n# Create users table according to migration\ncursor.execute(''''''\n    CREATE TABLE users (\n        id INTEGER PRIMARY KEY AUTOINCREMENT,\n        email VARCHAR(255) NOT NULL UNIQUE,\n        hashed_password VARCHAR(255) NOT NULL,\n        nome VARCHAR(100) NOT NULL,\n        cognome VARCHAR(100) NOT NULL,\n        role VARCHAR(50) NOT NULL DEFAULT ''commercialista'',\n        is_active BOOLEAN NOT NULL DEFAULT 1,\n        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP\n    )\n'''''')\n\n# Create index on email\ncursor.execute(''CREATE INDEX ix_users_email ON users (email)'')\n\n# Create alembic_version table to track migrations\ncursor.execute(''CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL PRIMARY KEY)'')\ncursor.execute(\"\"INSERT INTO alembic_version (version_num) VALUES (''orahb0yfvx9a'')\"\")\n\nconn.commit()\nconn.close()\n\nprint(''SUCCESS: Database created with users table and migration tracked'')\n\")"
     ],
     "deny": [],
     "ask": []
