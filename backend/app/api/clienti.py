@@ -217,7 +217,7 @@ def delete_cliente(
         current_user: Current authenticated user
 
     Raises:
-        HTTPException: 404 if cliente not found
+        HTTPException: 404 if cliente not found, 409 if cliente has associated contracts
     """
     cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
 
@@ -225,6 +225,12 @@ def delete_cliente(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Cliente not found"
+        )
+
+    if cliente.contratti:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Impossibile eliminare: il cliente ha contratti associati"
         )
 
     db.delete(cliente)
