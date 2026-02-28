@@ -113,18 +113,26 @@ def upload_documento(
         mime_type = mime_for_check
 
     # --- Persist DB record ---
-    documento = Documento(
-        cliente_id=cliente_id,
-        contratto_id=contratto_id,
-        tipo_documento=tipo_doc_enum.value,
-        file_name=file.filename or "unknown",
-        file_path=file_path,
-        file_size=file_size,
-        mime_type=mime_type,
-        note=note,
-    )
-    db.add(documento)
-    db.commit()
-    db.refresh(documento)
+    try:
+        documento = Documento(
+            cliente_id=cliente_id,
+            contratto_id=contratto_id,
+            tipo_documento=tipo_doc_enum.value,
+            file_name=file.filename or "unknown",
+            file_path=file_path,
+            file_size=file_size,
+            mime_type=mime_type,
+            note=note,
+        )
+        db.add(documento)
+        db.commit()
+        db.refresh(documento)
+    except Exception:
+        db.rollback()
+        storage_service.delete_file(file_path)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to save document record",
+        )
 
     return DocumentoOut.model_validate(documento)

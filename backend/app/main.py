@@ -22,7 +22,7 @@ app.include_router(auth_router, prefix="/api/v1")
 app.include_router(clienti_router, prefix="/api/v1")
 app.include_router(tipi_contratto_router, prefix="/api/v1")
 app.include_router(contratti_router, prefix="/api/v1")
-app.include_router(documenti_router, prefix="/api/v1", tags=["documenti"])
+app.include_router(documenti_router, prefix="/api/v1")
 
 @app.get("/api/v1/health")
 async def health_check():
