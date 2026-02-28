@@ -23,6 +23,7 @@ export function ContrattiPage() {
   // Maps per lookup nomi
   const clientiMap = useRef<Map<number, string>>(new Map());
   const tipiContrattoMap = useRef<Map<number, string>>(new Map());
+  const isInitialMount = useRef(true);
 
   const loadSupportData = useCallback(async () => {
     try {
@@ -85,6 +86,10 @@ export function ContrattiPage() {
   }, []);
 
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     loadContratti();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clienteFilter, tipoContrattoFilter, statoFilter]);
@@ -151,7 +156,10 @@ export function ContrattiPage() {
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={async () => {
+              await loadSupportData();
+              await loadContratti();
+            }}
             className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           >
             Riprova
@@ -305,6 +313,8 @@ export function ContrattiPage() {
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleModalSuccess}
         contratto={editingContratto}
+        clienti={clienti}
+        tipiContratto={tipiContratto}
       />
     </div>
   );

@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AxiosError } from 'axios';
 import { createContratto, updateContratto } from '@/services/contrattiService';
-import { getClienti } from '@/services/clientiService';
-import { getTipiContratto } from '@/services/tipiContrattoService';
 import { Contratto, ContrattoCreate, ContrattoUpdate } from '@/types/contratto';
 import { Cliente } from '@/types/cliente';
 import { TipoContratto } from '@/types/tipoContratto';
@@ -12,9 +10,11 @@ interface Props {
   onClose: () => void;
   onSuccess: () => void;
   contratto?: Contratto;
+  clienti: Cliente[];
+  tipiContratto: TipoContratto[];
 }
 
-export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto }: Props) {
+export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto, clienti, tipiContratto }: Props) {
   const [formData, setFormData] = useState({
     cliente_id: '',
     tipo_contratto_id: '',
@@ -23,17 +23,13 @@ export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto }: Pr
     stato: 'attivo' as 'attivo' | 'scaduto' | 'sospeso',
     note: ''
   });
-  const [clienti, setClienti] = useState<Cliente[]>([]);
-  const [tipiContratto, setTipiContratto] = useState<TipoContratto[]>([]);
   const [loading, setLoading] = useState(false);
-  const [loadingSupportData, setLoadingSupportData] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isEditMode = !!contratto;
 
   useEffect(() => {
     if (isOpen) {
-      loadSupportData();
       if (contratto) {
         setFormData({
           cliente_id: contratto.cliente_id.toString(),
@@ -57,25 +53,6 @@ export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto }: Pr
     }
   }, [isOpen, contratto]);
 
-  const loadSupportData = async () => {
-    setLoadingSupportData(true);
-    try {
-      const [clientiData, tipiContrattoData] = await Promise.all([
-        getClienti(),
-        getTipiContratto()
-      ]);
-      setClienti(clientiData);
-      setTipiContratto(tipiContrattoData);
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        setError(err.response?.data?.detail || 'Errore nel caricamento dei dati');
-      } else {
-        setError('Errore sconosciuto nel caricamento dei dati');
-      }
-    } finally {
-      setLoadingSupportData(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,12 +127,7 @@ export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto }: Pr
           </button>
         </div>
 
-        {loadingSupportData ? (
-          <div className="flex items-center justify-center p-12">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
             {error && (
               <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
                 {error}
@@ -276,7 +248,6 @@ export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto }: Pr
               </button>
             </div>
           </form>
-        )}
       </div>
     </div>
   );
