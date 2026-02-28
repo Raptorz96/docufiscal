@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { AxiosError } from 'axios';
 import { createContratto, updateContratto } from '@/services/contrattiService';
-import { Contratto, ContrattoCreate, ContrattoUpdate } from '@/types/contratto';
-import { Cliente } from '@/types/cliente';
-import { TipoContratto } from '@/types/tipoContratto';
+import type { Contratto, ContrattoCreate, ContrattoUpdate } from '@/types/contratto';
+import type { Cliente } from '@/types/cliente';
+import type { TipoContratto } from '@/types/tipoContratto';
 
 interface Props {
   isOpen: boolean;

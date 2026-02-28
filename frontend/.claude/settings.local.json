@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add src/pages/DashboardPage.tsx && git commit -m \"feat: extract DashboardPage from App.tsx\")",
+      "Bash(git add src/layouts/AppLayout.tsx && git commit -m \"feat: add AppLayout with responsive sidebar\")",
+      "Bash(git add src/layouts/AppLayout.tsx && git commit -m \"fix: resolve code review issues in AppLayout \\(imports, logout, accessibility\\)\")",
+      "Bash(git add src/App.tsx && git commit -m \"feat: wire AppLayout with nested routes, remove inline Dashboard\")"
+    ]
+  }
+}

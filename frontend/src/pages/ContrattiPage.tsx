@@ -3,9 +3,9 @@ import { AxiosError } from 'axios';
 import { getContratti, deleteContratto } from '@/services/contrattiService';
 import { getClienti } from '@/services/clientiService';
 import { getTipiContratto } from '@/services/tipiContrattoService';
-import { Contratto } from '@/types/contratto';
-import { Cliente } from '@/types/cliente';
-import { TipoContratto } from '@/types/tipoContratto';
+import type { Contratto } from '@/types/contratto';
+import type { Cliente } from '@/types/cliente';
+import type { TipoContratto } from '@/types/tipoContratto';
 import { ContrattoFormModal } from '@/components/ContrattoFormModal';
 
 export function ContrattiPage() {

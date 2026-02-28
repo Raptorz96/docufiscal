@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AxiosError } from 'axios';
 import { getClienti, deleteCliente } from '@/services/clientiService';
-import { Cliente } from '@/types/cliente';
+import type { Cliente } from '@/types/cliente';
 import { ClienteFormModal } from '@/components/ClienteFormModal';
 
 export function ClientiPage() {

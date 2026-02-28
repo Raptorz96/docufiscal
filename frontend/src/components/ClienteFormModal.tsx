@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AxiosError } from 'axios';
 import { createCliente, updateCliente } from '@/services/clientiService';
-import { Cliente, ClienteCreate, ClienteUpdate } from '@/types/cliente';
+import type { Cliente, ClienteCreate, ClienteUpdate } from '@/types/cliente';
 
 interface Props {
   isOpen: boolean;

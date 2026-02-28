@@ -1,5 +1,5 @@
 import api from './api';
-import { LoginCredentials, AuthResponse, User } from '../types/auth';
+import type { LoginCredentials, AuthResponse, User } from '../types/auth';
 
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   const formData = new URLSearchParams();
