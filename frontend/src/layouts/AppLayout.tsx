@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import type { FC, ReactNode } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import * as authService from '../services/authService';
 
 interface NavItem {
   label: string;
   to: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
 }
 
 const navItems: NavItem[] = [
@@ -45,13 +45,13 @@ const navItems: NavItem[] = [
 const activeLinkClass = 'flex items-center gap-3 px-4 py-2.5 rounded-lg bg-slate-700 text-white font-medium';
 const inactiveLinkClass = 'flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors';
 
-const AppLayout: React.FC = () => {
+const AppLayout: FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    authService.removeToken();
+    logout();
     navigate('/login');
   };
 
@@ -112,13 +112,19 @@ const AppLayout: React.FC = () => {
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
+          role="button"
+          tabIndex={-1}
+          aria-label="Chiudi menu"
           className="fixed inset-0 z-20 bg-black bg-opacity-50 md:hidden"
           onClick={() => setSidebarOpen(false)}
+          onKeyDown={(e) => { if (e.key === 'Escape') setSidebarOpen(false); }}
         />
       )}
 
       {/* Mobile sidebar */}
       <aside
+        aria-hidden={!sidebarOpen}
+        inert={!sidebarOpen ? (true as unknown as string) : undefined}
         className={`fixed inset-y-0 left-0 z-30 w-64 bg-slate-800 flex flex-col transform transition-transform duration-200 md:hidden ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
