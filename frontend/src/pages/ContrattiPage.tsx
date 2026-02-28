@@ -127,6 +127,11 @@ export function ContrattiPage() {
     loadContratti();
   };
 
+  const handleRetry = async () => {
+    await loadSupportData();
+    await loadContratti();
+  };
+
   const getStatoBadge = (stato: string) => {
     if (stato === 'attivo') {
       return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Attivo</span>;
@@ -156,10 +161,7 @@ export function ContrattiPage() {
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
           <button
-            onClick={async () => {
-              await loadSupportData();
-              await loadContratti();
-            }}
+            onClick={handleRetry}
             className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           >
             Riprova
