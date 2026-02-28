@@ -56,6 +56,23 @@ class StorageService:
         logger.info("Saved file %s (%d bytes)", relative_str, file_size)
         return relative_str, file_size
 
+    def _validate_path(self, relative_path: str) -> Path:
+        """Resolve absolute path and ensure it's within STORAGE_ROOT.
+
+        Args:
+            relative_path: Path relative to STORAGE_ROOT as stored in DB.
+
+        Returns:
+            Resolved absolute Path.
+
+        Raises:
+            ValueError: If the resolved path escapes STORAGE_ROOT (path traversal).
+        """
+        absolute_path = (self._root / relative_path).resolve()
+        if not str(absolute_path).startswith(str(self._root.resolve())):
+            raise ValueError(f"Path traversal detected: {relative_path}")
+        return absolute_path
+
     def get_file_path(self, relative_path: str) -> Path:
         """Return the absolute Path for a stored file.
 
@@ -66,9 +83,10 @@ class StorageService:
             Absolute Path object.
 
         Raises:
+            ValueError: If path traversal is detected.
             FileNotFoundError: If the file does not exist on disk.
         """
-        absolute_path = self._root / relative_path
+        absolute_path = self._validate_path(relative_path)
         if not absolute_path.is_file():
             raise FileNotFoundError(f"File not found: {relative_path}")
         return absolute_path
@@ -81,8 +99,11 @@ class StorageService:
 
         Returns:
             True if the file was deleted, False if it did not exist.
+
+        Raises:
+            ValueError: If path traversal is detected.
         """
-        absolute_path = self._root / relative_path
+        absolute_path = self._validate_path(relative_path)
         if not absolute_path.is_file():
             logger.warning("delete_file: file not found, skipping: %s", relative_path)
             return False
