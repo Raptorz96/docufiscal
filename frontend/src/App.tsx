@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
+import { ClientiPage } from './pages/ClientiPage';
 import './App.css'
 
 const Dashboard: React.FC = () => {
@@ -23,6 +24,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/clienti" element={<ProtectedRoute><ClientiPage /></ProtectedRoute>} />
           <Route
             path="/"
             element={
