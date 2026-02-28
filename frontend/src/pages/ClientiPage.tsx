@@ -38,7 +38,8 @@ export function ClientiPage() {
 
   useEffect(() => {
     loadClienti();
-  }, [tipoFilter, loadClienti]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tipoFilter]);
 
   useEffect(() => {
     if (isInitialMount.current) {
