@@ -4,7 +4,16 @@
       "Bash(git add src/pages/DashboardPage.tsx && git commit -m \"feat: extract DashboardPage from App.tsx\")",
       "Bash(git add src/layouts/AppLayout.tsx && git commit -m \"feat: add AppLayout with responsive sidebar\")",
       "Bash(git add src/layouts/AppLayout.tsx && git commit -m \"fix: resolve code review issues in AppLayout \\(imports, logout, accessibility\\)\")",
-      "Bash(git add src/App.tsx && git commit -m \"feat: wire AppLayout with nested routes, remove inline Dashboard\")"
+      "Bash(git add src/App.tsx && git commit -m \"feat: wire AppLayout with nested routes, remove inline Dashboard\")",
+      "Bash(cd /mnt/c/Users/marco/OneDrive/Desktop/DocuFiscal/backend && python -c \"from app.models import Documento, TipoDocumento; print\\('Import OK'\\)\" 2>&1)",
+      "Bash(cd /mnt/c/Users/marco/OneDrive/Desktop/DocuFiscal/backend && python3 -c \"from app.models import Documento, TipoDocumento; print\\('Import OK'\\)\" 2>&1)",
+      "Bash(source venv/Scripts/activate && python -c \"from app.models import Documento, TipoDocumento; print\\('Import OK'\\)\" 2>&1)",
+      "Bash(./venv/Scripts/python.exe -c \"from app.models import Documento, TipoDocumento; from app.schemas import DocumentoCreate, DocumentoUpdate, DocumentoOut; print\\('All imports OK'\\)\" 2>&1)",
+      "Bash(./venv/Scripts/alembic.exe revision --autogenerate -m \"create_documenti_table\" 2>&1)",
+      "Bash(./venv/Scripts/alembic.exe upgrade head 2>&1)",
+      "Bash(./venv/Scripts/alembic.exe stamp 70dc3fd11c4a 2>&1)",
+      "Bash(./venv/Scripts/alembic.exe current 2>&1)",
+      "Bash(./venv/Scripts/python.exe -c \"\nfrom app.models import Cliente, Contratto, Documento, TipoDocumento\nfrom app.schemas import DocumentoCreate, DocumentoUpdate, DocumentoOut\n\n# Verifica back_populates su Cliente e Contratto\nc = Cliente.__mapper__.relationships\nprint\\('Cliente relationships:', [r.key for r in c]\\)\n\ncc = Contratto.__mapper__.relationships\nprint\\('Contratto relationships:', [r.key for r in cc]\\)\n\n# Verifica schema\nd = DocumentoCreate\\(cliente_id=1\\)\nprint\\('DocumentoCreate OK:', d\\)\n\nprint\\('TipoDocumento values:', [e.value for e in TipoDocumento]\\)\n\" 2>&1)"
     ]
   }
 }

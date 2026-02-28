@@ -1,6 +1,6 @@
 """Contratto model for DocuFiscal application."""
 from datetime import date, datetime
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -100,6 +100,12 @@ class Contratto(Base):
         "TipoContratto",
         back_populates="contratti",
         doc="Relationship to the contract type"
+    )
+
+    documenti: Mapped[List["Documento"]] = relationship(
+        "Documento",
+        back_populates="contratto",
+        doc="List of documents associated with this contract"
     )
 
     def __repr__(self) -> str:

@@ -1,6 +1,6 @@
 """Cliente model for DocuFiscal application."""
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
 
 from sqlalchemy import DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -100,6 +100,12 @@ class Cliente(Base):
         "Contratto",
         back_populates="cliente",
         doc="List of contracts associated with this client"
+    )
+
+    documenti: Mapped[List["Documento"]] = relationship(
+        "Documento",
+        back_populates="cliente",
+        doc="List of documents associated with this client"
     )
 
     def __repr__(self) -> str:
