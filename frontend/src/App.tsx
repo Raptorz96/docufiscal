@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import { ClientiPage } from './pages/ClientiPage';
+import { ContrattiPage } from './pages/ContrattiPage';
 import './App.css'
 
 const Dashboard: React.FC = () => {
@@ -25,6 +26,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/clienti" element={<ProtectedRoute><ClientiPage /></ProtectedRoute>} />
+          <Route path="/contratti" element={<ProtectedRoute><ContrattiPage /></ProtectedRoute>} />
           <Route
             path="/"
             element={
