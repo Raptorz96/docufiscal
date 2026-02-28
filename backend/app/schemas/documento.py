@@ -34,7 +34,6 @@ class DocumentoOut(BaseModel):
     tipo_documento: str
     tipo_documento_raw: Optional[str] = None
     file_name: str
-    file_path: str
     file_size: int
     mime_type: str
     classificazione_ai: Optional[Any] = None
