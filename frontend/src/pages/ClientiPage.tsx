@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { AxiosError } from 'axios';
 import { getClienti, deleteCliente } from '@/services/clientiService';
 import { Cliente } from '@/types/cliente';
@@ -12,9 +12,10 @@ export function ClientiPage() {
   const [tipoFilter, setTipoFilter] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCliente, setEditingCliente] = useState<Cliente | undefined>(undefined);
-  const [searchTimeout, setSearchTimeout] = useState<number | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isInitialMount = useRef(true);
 
-  const loadClienti = async () => {
+  const loadClienti = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -33,27 +34,32 @@ export function ClientiPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, tipoFilter]);
 
   useEffect(() => {
     loadClienti();
-  }, [tipoFilter]);
+  }, [tipoFilter, loadClienti]);
 
   useEffect(() => {
-    if (searchTimeout) {
-      clearTimeout(searchTimeout);
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
     }
 
-    const timeout = setTimeout(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
       loadClienti();
     }, 300);
 
-    setSearchTimeout(timeout);
-
     return () => {
-      if (timeout) clearTimeout(timeout);
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
     };
-  }, [search]);
+  }, [search, loadClienti]);
 
   const handleDelete = async (cliente: Cliente) => {
     if (!window.confirm(`Sei sicuro di voler eliminare il cliente "${cliente.nome} ${cliente.cognome || ''}"?`)) {
