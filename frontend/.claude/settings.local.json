@@ -33,7 +33,9 @@
       "Bash(cd /mnt/c/Users/marco/OneDrive/Desktop/DocuFiscal/frontend && npx tsc --noEmit 2>&1)",
       "Bash(npx tsc --noEmit 2>&1)",
       "Bash(cd /mnt/c/Users/marco/OneDrive/Desktop/DocuFiscal/backend && ./venv/Scripts/python.exe -c \"\nimport ast, sys\nwith open\\('app/ai/text_extraction.py'\\) as f:\n    src = f.read\\(\\)\nast.parse\\(src\\)\nprint\\('Syntax OK'\\)\n\")",
-      "Bash(./venv/Scripts/python.exe -c \"\nfrom app.core.config import settings\nfrom app.ai import text_extraction_service\nprint\\('Import OK'\\)\nprint\\('STORAGE_ROOT:', settings.STORAGE_ROOT\\)\n\")"
+      "Bash(./venv/Scripts/python.exe -c \"\nfrom app.core.config import settings\nfrom app.ai import text_extraction_service\nprint\\('Import OK'\\)\nprint\\('STORAGE_ROOT:', settings.STORAGE_ROOT\\)\n\")",
+      "Bash(./venv/Scripts/python.exe -c \"import ast; ast.parse\\(open\\('app/ai/text_extraction.py'\\).read\\(\\)\\); print\\('OK'\\)\")",
+      "Bash(./venv/Scripts/python.exe -c \"\nfrom app.ai import BaseClassifier, ClassificationResult, get_classifier\nfrom app.core.config import settings\nprint\\('Import OK'\\)\nprint\\('AI_PROVIDER:', settings.AI_PROVIDER\\)\nprint\\('AI_MODEL:', settings.AI_MODEL\\)\nprint\\('CONFIDENCE_THRESHOLD:', settings.CONFIDENCE_THRESHOLD\\)\n\n# Verifica dataclass\nr = ClassificationResult\\(\n    tipo_documento='fattura',\n    tipo_documento_raw='Fattura di vendita',\n    confidence=0.92,\n\\)\nprint\\('ClassificationResult OK:', r\\)\n\")"
     ]
   }
 }

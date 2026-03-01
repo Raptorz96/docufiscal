@@ -85,6 +85,9 @@ class TextExtractionService:
         except pytesseract.TesseractNotFoundError:  # type: ignore[attr-defined]
             logger.error("Tesseract OCR not installed or not found in PATH")
             return ""
+        except ImportError:
+            logger.error("Required OCR dependencies not installed (pytesseract, pdf2image)")
+            return ""
         except Exception:
             logger.exception("Error during PDF OCR extraction: %s", abs_path)
             return ""
@@ -104,6 +107,9 @@ class TextExtractionService:
             return ""
         except pytesseract.TesseractNotFoundError:  # type: ignore[attr-defined]
             logger.error("Tesseract OCR not installed or not found in PATH")
+            return ""
+        except ImportError:
+            logger.error("Required OCR dependencies not installed (pytesseract, Pillow)")
             return ""
         except Exception:
             logger.exception("Error extracting text from image: %s", abs_path)
