@@ -24,6 +24,19 @@ class DocumentoUpdate(BaseModel):
     verificato_da_utente: Optional[bool] = None
 
 
+class ClassificazioneOverride(BaseModel):
+    """Schema for confirming or correcting AI classification of a document.
+
+    contratto_id uses model_fields_set to distinguish "not sent" (no-op)
+    from "sent null" (explicit dissociation).
+    """
+
+    tipo_documento: TipoDocumento
+    cliente_id: Optional[int] = None
+    contratto_id: Optional[int] = None
+    note: Optional[str] = None
+
+
 class DocumentoOut(BaseModel):
     """Schema for documento response data."""
     model_config = ConfigDict(from_attributes=True)

@@ -16,7 +16,7 @@ from app.models.cliente import Cliente
 from app.models.contratto import Contratto
 from app.models.documento import Documento, TipoDocumento
 from app.models.user import User
-from app.schemas.documento import DocumentoOut, DocumentoUpdate
+from app.schemas.documento import ClassificazioneOverride, DocumentoOut, DocumentoUpdate
 from app.storage import storage_service
 
 logger = logging.getLogger(__name__)
@@ -322,6 +322,77 @@ def update_documento(
     fields: Dict[str, Any] = update_data.model_dump(exclude_unset=True)
     for field, value in fields.items():
         setattr(documento, field, value)
+
+    db.commit()
+    db.refresh(documento)
+    return DocumentoOut.model_validate(documento)
+
+
+@router.patch("/{documento_id}/classifica", response_model=DocumentoOut)
+def classifica_documento(
+    documento_id: int,
+    body: ClassificazioneOverride,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> DocumentoOut:
+    """Confirm or override the AI classification of a document.
+
+    Args:
+        documento_id: ID of the document to classify.
+        body: Classification override payload.
+        db: Database session dependency.
+        current_user: Current authenticated user.
+
+    Returns:
+        DocumentoOut: The updated document record.
+
+    Raises:
+        HTTPException 400: If the contratto does not belong to the specified cliente.
+        HTTPException 404: If the document, cliente, or contratto is not found.
+    """
+    documento = db.query(Documento).filter(Documento.id == documento_id).first()
+    if not documento:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Documento {documento_id} not found",
+        )
+
+    # Determine effective cliente_id
+    if body.cliente_id is not None:
+        cliente = db.query(Cliente).filter(Cliente.id == body.cliente_id).first()
+        if not cliente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Cliente {body.cliente_id} not found",
+            )
+        effective_cliente_id = body.cliente_id
+    else:
+        effective_cliente_id = documento.cliente_id
+
+    # Handle contratto_id only when explicitly included in the request body
+    if "contratto_id" in body.model_fields_set:
+        if body.contratto_id is None:
+            documento.contratto_id = None
+        else:
+            contratto = db.query(Contratto).filter(Contratto.id == body.contratto_id).first()
+            if not contratto:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Contratto {body.contratto_id} not found",
+                )
+            if contratto.cliente_id != effective_cliente_id:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Il contratto non appartiene al cliente specificato",
+                )
+            documento.contratto_id = body.contratto_id
+
+    documento.tipo_documento = body.tipo_documento.value
+    documento.verificato_da_utente = True
+    documento.cliente_id = effective_cliente_id
+
+    if "note" in body.model_fields_set:
+        documento.note = body.note
 
     db.commit()
     db.refresh(documento)
