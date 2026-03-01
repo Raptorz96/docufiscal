@@ -20,9 +20,7 @@ export const getDocumento = async (id: number): Promise<Documento> => {
 };
 
 export const uploadDocumento = async (data: FormData): Promise<Documento> => {
-  const response = await api.post('/documenti/upload', data, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  const response = await api.post('/documenti/upload', data);
   return response.data;
 };
 
