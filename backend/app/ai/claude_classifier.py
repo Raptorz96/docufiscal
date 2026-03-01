@@ -1,28 +1,16 @@
 """
-Document classifier implementation using Google Gemini API.
+Document classifier implementation using Anthropic Claude API.
 """
 import json
 import logging
 
-from google import genai
+import anthropic
 
 from app.ai.classifier import BaseClassifier, ClassificationResult
 from app.ai.prompts import build_classification_prompt
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
-
-_RESPONSE_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "tipo_documento": {"type": "string"},
-        "tipo_documento_raw": {"type": "string"},
-        "confidence": {"type": "number"},
-        "cliente_suggerito": {"type": "string"},
-        "contratto_suggerito": {"type": "string"},
-    },
-    "required": ["tipo_documento", "tipo_documento_raw", "confidence"],
-}
 
 _DEFAULT_RESULT = ClassificationResult(
     tipo_documento="altro",
@@ -31,13 +19,13 @@ _DEFAULT_RESULT = ClassificationResult(
 )
 
 
-class GeminiClassifier(BaseClassifier):
-    """Document classifier backed by Google Gemini."""
+class ClaudeClassifier(BaseClassifier):
+    """Document classifier backed by Anthropic Claude."""
 
     def __init__(self) -> None:
-        self.client = genai.Client(api_key=settings.AI_API_KEY)
+        self.client = anthropic.Anthropic(api_key=settings.AI_API_KEY)
         self.model = settings.AI_MODEL
-        logger.info("GeminiClassifier initialised with model: %s", self.model)
+        logger.info("ClaudeClassifier initialised with model: %s", self.model)
 
     def classify(
         self,
@@ -45,7 +33,7 @@ class GeminiClassifier(BaseClassifier):
         available_types: list[str],
         clienti_context: list[dict] | None = None,
     ) -> ClassificationResult:
-        """Classify a document using Gemini structured JSON output.
+        """Classify a document using Claude with JSON-only system prompt.
 
         Args:
             text: Extracted document text.
@@ -58,21 +46,19 @@ class GeminiClassifier(BaseClassifier):
         try:
             prompt = build_classification_prompt(text, available_types, clienti_context)
 
-            response = self.client.models.generate_content(
+            response = self.client.messages.create(
                 model=self.model,
-                contents=prompt,
-                config={
-                    "response_mime_type": "application/json",
-                    "response_schema": _RESPONSE_SCHEMA,
-                },
+                max_tokens=1024,
+                system="Rispondi SOLO con un JSON valido, senza testo aggiuntivo.",
+                messages=[{"role": "user", "content": prompt}],
             )
 
-            data: dict = json.loads(response.text)
+            data: dict = json.loads(response.content[0].text)
 
             tipo = data.get("tipo_documento", "altro")
             if tipo not in available_types:
                 logger.warning(
-                    "Gemini returned unknown tipo_documento '%s', falling back to 'altro'", tipo
+                    "Claude returned unknown tipo_documento '%s', falling back to 'altro'", tipo
                 )
                 tipo = "altro"
 
@@ -88,6 +74,12 @@ class GeminiClassifier(BaseClassifier):
                 raw_response=data,
             )
 
+        except anthropic.AuthenticationError:
+            logger.error("Invalid Claude API key")
+            return _DEFAULT_RESULT
+        except anthropic.RateLimitError:
+            logger.error("Claude rate limit exceeded")
+            return _DEFAULT_RESULT
         except Exception:
-            logger.exception("Gemini classification failed")
+            logger.exception("Claude classification failed")
             return _DEFAULT_RESULT
