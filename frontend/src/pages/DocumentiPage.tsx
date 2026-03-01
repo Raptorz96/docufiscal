@@ -3,37 +3,11 @@ import { AxiosError } from 'axios';
 import { getDocumenti, deleteDocumento, downloadDocumento } from '@/services/documentoService';
 import { getClienti } from '@/services/clientiService';
 import { getContratti } from '@/services/contrattiService';
+import { TIPO_LABELS, TIPO_BADGE_CLASSES } from '@/utils/documentoLabels';
+import { UploadDocumentoModal } from '@/components/UploadDocumentoModal';
 import type { Documento, TipoDocumento } from '@/types/documento';
 import type { Cliente } from '@/types/cliente';
 import type { Contratto } from '@/types/contratto';
-
-const TIPO_LABELS: Record<TipoDocumento, string> = {
-  dichiarazione_redditi: 'Dichiarazione Redditi',
-  fattura: 'Fattura',
-  f24: 'F24',
-  cu: 'CU',
-  visura_camerale: 'Visura Camerale',
-  busta_paga: 'Busta Paga',
-  contratto: 'Contratto',
-  bilancio: 'Bilancio',
-  comunicazione_agenzia: 'Com. Agenzia',
-  documento_identita: 'Doc. Identità',
-  altro: 'Altro',
-};
-
-const TIPO_BADGE_CLASSES: Record<TipoDocumento, string> = {
-  dichiarazione_redditi: 'bg-blue-100 text-blue-800',
-  fattura:              'bg-green-100 text-green-800',
-  f24:                  'bg-orange-100 text-orange-800',
-  cu:                   'bg-purple-100 text-purple-800',
-  visura_camerale:      'bg-cyan-100 text-cyan-800',
-  busta_paga:           'bg-yellow-100 text-yellow-800',
-  contratto:            'bg-indigo-100 text-indigo-800',
-  bilancio:             'bg-teal-100 text-teal-800',
-  comunicazione_agenzia:'bg-pink-100 text-pink-800',
-  documento_identita:   'bg-red-100 text-red-800',
-  altro:                'bg-gray-100 text-gray-800',
-};
 
 function formatFileSize(bytes: number): string {
   if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -54,6 +28,7 @@ export function DocumentiPage() {
   const [clienteFilter, setClienteFilter] = useState('');
   const [tipoFilter, setTipoFilter] = useState('');
   const [contrattoFilter, setContrattoFilter] = useState('');
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   const clientiMap = useRef<Map<number, string>>(new Map());
   const contrattiMap = useRef<Map<number, string>>(new Map());
@@ -199,8 +174,8 @@ export function DocumentiPage() {
           </div>
           <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
             <button
-              disabled
-              className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto opacity-50 cursor-not-allowed"
+              onClick={() => setIsUploadOpen(true)}
+              className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
             >
               + Carica Documento
             </button>
@@ -333,6 +308,12 @@ export function DocumentiPage() {
           )}
         </div>
       </div>
+
+      <UploadDocumentoModal
+        isOpen={isUploadOpen}
+        onClose={() => setIsUploadOpen(false)}
+        onSuccess={() => { setIsUploadOpen(false); loadDocumenti(); }}
+      />
     </div>
   );
 }
