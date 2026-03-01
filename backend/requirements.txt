@@ -10,3 +10,7 @@ python-multipart
 python-dotenv
 email-validator
 psycopg2-binary
+PyPDF2
+pytesseract
+Pillow
+pdf2image
