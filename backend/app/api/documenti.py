@@ -1,6 +1,7 @@
 """API endpoints for document upload and management."""
 from pathlib import Path
 from typing import Any, Dict, Generator, Optional
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session
@@ -346,8 +347,10 @@ def download_documento(
             while chunk := f.read(_DOWNLOAD_CHUNK_SIZE):
                 yield chunk
 
+    safe_name = documento.file_name.replace('"', '\\"')
+    encoded_name = quote(documento.file_name)
     headers = {
-        "Content-Disposition": f'attachment; filename="{documento.file_name}"',
+        "Content-Disposition": f'attachment; filename="{safe_name}"; filename*=UTF-8\'\'{encoded_name}',
         "Content-Length": str(documento.file_size),
     }
     return StreamingResponse(
