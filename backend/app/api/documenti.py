@@ -1,7 +1,7 @@
 """API endpoints for document upload and management."""
-from typing import Optional
+from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
@@ -11,7 +11,7 @@ from app.models.cliente import Cliente
 from app.models.contratto import Contratto
 from app.models.documento import Documento, TipoDocumento
 from app.models.user import User
-from app.schemas.documento import DocumentoOut
+from app.schemas.documento import DocumentoOut, DocumentoUpdate
 from app.storage import storage_service
 
 router = APIRouter(prefix="/documenti", tags=["documenti"])
@@ -136,3 +136,167 @@ def upload_documento(
         )
 
     return DocumentoOut.model_validate(documento)
+
+
+@router.get("/", response_model=list[DocumentoOut])
+def list_documenti(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    cliente_id: Optional[int] = Query(None, description="Filter by cliente_id"),
+    contratto_id: Optional[int] = Query(None, description="Filter by contratto_id"),
+    tipo_documento: Optional[str] = Query(None, description="Filter by tipo_documento"),
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(50, ge=1, le=500, description="Maximum number of records to return"),
+) -> list[DocumentoOut]:
+    """List documents with optional filters, ordered by most recent first.
+
+    Args:
+        db: Database session dependency.
+        current_user: Current authenticated user.
+        cliente_id: Optional filter by client ID.
+        contratto_id: Optional filter by contract ID.
+        tipo_documento: Optional filter by document type.
+        skip: Pagination offset.
+        limit: Maximum number of results (capped at 500).
+
+    Returns:
+        list[DocumentoOut]: Matching documents, newest first.
+    """
+    query = db.query(Documento)
+
+    if cliente_id is not None:
+        query = query.filter(Documento.cliente_id == cliente_id)
+    if contratto_id is not None:
+        query = query.filter(Documento.contratto_id == contratto_id)
+    if tipo_documento is not None:
+        query = query.filter(Documento.tipo_documento == tipo_documento)
+
+    documenti = (
+        query
+        .order_by(Documento.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+    return [DocumentoOut.model_validate(d) for d in documenti]
+
+
+@router.get("/{documento_id}", response_model=DocumentoOut)
+def get_documento(
+    documento_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> DocumentoOut:
+    """Get a single document by ID.
+
+    Args:
+        documento_id: ID of the document to retrieve.
+        db: Database session dependency.
+        current_user: Current authenticated user.
+
+    Returns:
+        DocumentoOut: The document record.
+
+    Raises:
+        HTTPException 404: If the document does not exist.
+    """
+    documento = db.query(Documento).filter(Documento.id == documento_id).first()
+    if not documento:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Documento {documento_id} not found",
+        )
+    return DocumentoOut.model_validate(documento)
+
+
+@router.put("/{documento_id}", response_model=DocumentoOut)
+def update_documento(
+    documento_id: int,
+    update_data: DocumentoUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> DocumentoOut:
+    """Update document metadata. File fields (file_name, file_path, file_size, mime_type) are immutable.
+
+    Args:
+        documento_id: ID of the document to update.
+        update_data: Fields to update (only non-None values are applied).
+        db: Database session dependency.
+        current_user: Current authenticated user.
+
+    Returns:
+        DocumentoOut: The updated document record.
+
+    Raises:
+        HTTPException 400: If the new contratto_id does not belong to the document's cliente.
+        HTTPException 404: If the document or new contratto_id is not found.
+    """
+    documento = db.query(Documento).filter(Documento.id == documento_id).first()
+    if not documento:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Documento {documento_id} not found",
+        )
+
+    # Validate new contratto_id if being changed
+    if update_data.contratto_id is not None:
+        contratto = db.query(Contratto).filter(Contratto.id == update_data.contratto_id).first()
+        if not contratto:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Contratto {update_data.contratto_id} not found",
+            )
+        if contratto.cliente_id != documento.cliente_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    f"Contratto {update_data.contratto_id} does not belong to "
+                    f"cliente {documento.cliente_id}"
+                ),
+            )
+
+    fields: Dict[str, Any] = update_data.model_dump(exclude_unset=True)
+    for field, value in fields.items():
+        setattr(documento, field, value)
+
+    db.commit()
+    db.refresh(documento)
+    return DocumentoOut.model_validate(documento)
+
+
+@router.delete("/{documento_id}", status_code=status.HTTP_200_OK)
+def delete_documento(
+    documento_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Dict[str, str]:
+    """Delete a document record and its file from the filesystem.
+
+    The DB record is deleted first; only on success is the file removed.
+    This prevents orphaned DB records if storage deletion fails.
+
+    Args:
+        documento_id: ID of the document to delete.
+        db: Database session dependency.
+        current_user: Current authenticated user.
+
+    Returns:
+        dict: Confirmation message.
+
+    Raises:
+        HTTPException 404: If the document does not exist.
+    """
+    documento = db.query(Documento).filter(Documento.id == documento_id).first()
+    if not documento:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Documento {documento_id} not found",
+        )
+
+    file_path = documento.file_path
+    db.delete(documento)
+    db.commit()
+
+    storage_service.delete_file(file_path)
+
+    return {"detail": "Documento eliminato"}
