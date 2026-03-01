@@ -36,4 +36,11 @@ interface DocumentoUpdate {
   verificato_da_utente?: boolean;
 }
 
-export type { TipoDocumento, Documento, DocumentoUpdate };
+interface ClassificazioneOverride {
+  tipo_documento: TipoDocumento;
+  cliente_id?: number;
+  contratto_id?: number | null;
+  note?: string | null;
+}
+
+export type { TipoDocumento, Documento, DocumentoUpdate, ClassificazioneOverride };

@@ -1,5 +1,5 @@
 import api from '@/services/api';
-import type { Documento, DocumentoUpdate } from '@/types/documento';
+import type { ClassificazioneOverride, Documento, DocumentoUpdate } from '@/types/documento';
 
 interface GetDocumentiParams {
   cliente_id?: number;
@@ -26,6 +26,11 @@ export const uploadDocumento = async (data: FormData): Promise<Documento> => {
 
 export const updateDocumento = async (id: number, data: DocumentoUpdate): Promise<Documento> => {
   const response = await api.put(`/documenti/${id}`, data);
+  return response.data;
+};
+
+export const classificaDocumento = async (id: number, data: ClassificazioneOverride): Promise<Documento> => {
+  const response = await api.patch(`/documenti/${id}/classifica`, data);
   return response.data;
 };
 

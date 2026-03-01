@@ -6,6 +6,7 @@ import { getContratti } from '@/services/contrattiService';
 import { TIPO_LABELS, TIPO_BADGE_CLASSES } from '@/utils/documentoLabels';
 import { formatFileSize, formatDate } from '@/utils/formatters';
 import { UploadDocumentoModal } from '@/components/UploadDocumentoModal';
+import { ClassificazioneModal } from '@/components/ClassificazioneModal';
 import type { Documento, TipoDocumento } from '@/types/documento';
 import type { Cliente } from '@/types/cliente';
 import type { Contratto } from '@/types/contratto';
@@ -20,6 +21,7 @@ export function DocumentiPage() {
   const [tipoFilter, setTipoFilter] = useState('');
   const [contrattoFilter, setContrattoFilter] = useState('');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [selectedDocumento, setSelectedDocumento] = useState<Documento | null>(null);
 
   const clientiMap = useRef<Map<number, string>>(new Map());
   const contrattiMap = useRef<Map<number, string>>(new Map());
@@ -118,11 +120,72 @@ export function DocumentiPage() {
     await loadDocumenti();
   };
 
+  const handleClassificaSuccess = useCallback((updated: Documento) => {
+    setDocumenti((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
+    setSelectedDocumento(null);
+  }, []);
+
   const getTipoBadge = (tipo: TipoDocumento) => (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${TIPO_BADGE_CLASSES[tipo]}`}>
       {TIPO_LABELS[tipo]}
     </span>
   );
+
+  const getAiBadge = (doc: Documento) => {
+    // CASO A: already verified by user
+    if (doc.verificato_da_utente) {
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          ✓ Verificato
+        </span>
+      );
+    }
+    // CASO D: AI never ran
+    if (doc.classificazione_ai === null) {
+      return <span className="text-xs text-gray-400">—</span>;
+    }
+    const label = doc.tipo_documento_raw ?? TIPO_LABELS[doc.tipo_documento];
+    // CASO B: high confidence
+    if (doc.confidence_score !== null && doc.confidence_score >= 0.75) {
+      const pct = Math.round(doc.confidence_score * 100);
+      return (
+        <div className="flex flex-col gap-1">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+            {label} · {pct}%
+          </span>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setSelectedDocumento(doc)}
+              className="px-2 py-0.5 text-xs font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700"
+            >
+              Conferma
+            </button>
+            <button
+              onClick={() => setSelectedDocumento(doc)}
+              className="px-2 py-0.5 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100"
+            >
+              Correggi
+            </button>
+          </div>
+        </div>
+      );
+    }
+    // CASO C: low / missing confidence
+    const pct = doc.confidence_score !== null ? Math.round(doc.confidence_score * 100) : null;
+    return (
+      <div className="flex flex-col gap-1">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          {pct !== null ? `${label} · ${pct}%` : 'Non classificato'}
+        </span>
+        <button
+          onClick={() => setSelectedDocumento(doc)}
+          className="px-2 py-0.5 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100 self-start"
+        >
+          Correggi
+        </button>
+      </div>
+    );
+  };
 
   // Contratti visibili nel select: filtrati per cliente se selezionato
   const contrattiFiltered = clienteFilter
@@ -244,6 +307,9 @@ export function DocumentiPage() {
                       Tipo Documento
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Classificazione AI
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Cliente
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -265,6 +331,9 @@ export function DocumentiPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getTipoBadge(doc.tipo_documento)}
+                      </td>
+                      <td className="px-6 py-4">
+                        {getAiBadge(doc)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {clientiMap.current.get(doc.cliente_id) ?? '—'}
@@ -305,6 +374,16 @@ export function DocumentiPage() {
         onClose={() => setIsUploadOpen(false)}
         onSuccess={() => { setIsUploadOpen(false); loadDocumenti(); }}
       />
+
+      {selectedDocumento !== null && (
+        <ClassificazioneModal
+          documento={selectedDocumento}
+          clienti={clienti}
+          contratti={contratti}
+          onClose={() => setSelectedDocumento(null)}
+          onSuccess={handleClassificaSuccess}
+        />
+      )}
     </div>
   );
 }
