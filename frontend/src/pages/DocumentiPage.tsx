@@ -156,12 +156,6 @@ export function DocumentiPage() {
           <div className="flex gap-1">
             <button
               onClick={() => setSelectedDocumento(doc)}
-              className="px-2 py-0.5 text-xs font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700"
-            >
-              Conferma
-            </button>
-            <button
-              onClick={() => setSelectedDocumento(doc)}
               className="px-2 py-0.5 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100"
             >
               Correggi
