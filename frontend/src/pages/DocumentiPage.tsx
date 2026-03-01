@@ -4,20 +4,11 @@ import { getDocumenti, deleteDocumento, downloadDocumento } from '@/services/doc
 import { getClienti } from '@/services/clientiService';
 import { getContratti } from '@/services/contrattiService';
 import { TIPO_LABELS, TIPO_BADGE_CLASSES } from '@/utils/documentoLabels';
+import { formatFileSize, formatDate } from '@/utils/formatters';
 import { UploadDocumentoModal } from '@/components/UploadDocumentoModal';
 import type { Documento, TipoDocumento } from '@/types/documento';
 import type { Cliente } from '@/types/cliente';
 import type { Contratto } from '@/types/contratto';
-
-function formatFileSize(bytes: number): string {
-  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${bytes} B`;
-}
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('it-IT');
-}
 
 export function DocumentiPage() {
   const [documenti, setDocumenti] = useState<Documento[]>([]);

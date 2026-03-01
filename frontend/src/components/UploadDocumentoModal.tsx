@@ -4,6 +4,7 @@ import { uploadDocumento } from '@/services/documentoService';
 import { getClienti } from '@/services/clientiService';
 import { getContratti } from '@/services/contrattiService';
 import { TIPO_LABELS } from '@/utils/documentoLabels';
+import { formatFileSize } from '@/utils/formatters';
 import type { TipoDocumento } from '@/types/documento';
 import type { Cliente } from '@/types/cliente';
 import type { Contratto } from '@/types/contratto';
@@ -12,12 +13,6 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${bytes} B`;
 }
 
 const EMPTY_FORM = {
