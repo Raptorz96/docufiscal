@@ -1,4 +1,5 @@
 """API endpoints for document upload and management."""
+import logging
 from pathlib import Path
 from typing import Any, Dict, Generator, Optional
 from urllib.parse import quote
@@ -7,6 +8,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Upload
 from sqlalchemy.orm import Session
 from starlette.responses import StreamingResponse
 
+from app.ai import get_classifier, text_extraction_service
 from app.api.deps import get_current_user
 from app.core.config import settings
 from app.core.database import get_db
@@ -16,6 +18,8 @@ from app.models.documento import Documento, TipoDocumento
 from app.models.user import User
 from app.schemas.documento import DocumentoOut, DocumentoUpdate
 from app.storage import storage_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/documenti", tags=["documenti"])
 
@@ -136,6 +140,62 @@ def upload_documento(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to save document record",
+        )
+
+    # --- AI Classification (non-blocking: errors only log, document stays saved) ---
+    try:
+        extracted_text = text_extraction_service.extract_text(
+            documento.file_path, documento.mime_type
+        )
+
+        if extracted_text.strip():
+            clienti = db.query(Cliente).all()
+            clienti_context = [
+                {
+                    "nome": c.nome,
+                    "cognome": c.cognome,
+                    "codice_fiscale": c.codice_fiscale,
+                }
+                for c in clienti
+            ]
+
+            available_types = [e.value for e in TipoDocumento]
+            classifier = get_classifier()
+            result = classifier.classify(
+                text=extracted_text,
+                available_types=available_types,
+                clienti_context=clienti_context,
+            )
+
+            documento.classificazione_ai = result.raw_response
+            documento.confidence_score = result.confidence
+            documento.tipo_documento_raw = result.tipo_documento_raw
+
+            if (
+                result.confidence >= settings.CONFIDENCE_THRESHOLD
+                and tipo_documento == "altro"
+            ):
+                documento.tipo_documento = result.tipo_documento
+
+            db.commit()
+            db.refresh(documento)
+
+            logger.info(
+                "AI classification for documento %d: tipo=%s, confidence=%.2f",
+                documento.id,
+                result.tipo_documento,
+                result.confidence,
+            )
+        else:
+            logger.warning(
+                "No text extracted from documento %d, skipping AI classification",
+                documento.id,
+            )
+
+    except Exception:
+        logger.exception(
+            "AI classification failed for documento %d, document saved without classification",
+            documento.id,
         )
 
     return DocumentoOut.model_validate(documento)
