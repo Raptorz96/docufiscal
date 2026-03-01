@@ -1,8 +1,10 @@
 """API endpoints for document upload and management."""
-from typing import Any, Dict, Optional
+from pathlib import Path
+from typing import Any, Dict, Generator, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session
+from starlette.responses import StreamingResponse
 
 from app.api.deps import get_current_user
 from app.core.config import settings
@@ -300,3 +302,56 @@ def delete_documento(
     storage_service.delete_file(file_path)
 
     return {"detail": "Documento eliminato"}
+
+
+_DOWNLOAD_CHUNK_SIZE = 8 * 1024  # 8 KB
+
+
+@router.get("/{documento_id}/download")
+def download_documento(
+    documento_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> StreamingResponse:
+    """Stream a document file to the client as an attachment.
+
+    Args:
+        documento_id: ID of the document to download.
+        db: Database session dependency.
+        current_user: Current authenticated user.
+
+    Returns:
+        StreamingResponse: File content streamed in 8 KB chunks.
+
+    Raises:
+        HTTPException 404: If the document record or the file on disk is not found.
+    """
+    documento = db.query(Documento).filter(Documento.id == documento_id).first()
+    if not documento:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Documento {documento_id} not found",
+        )
+
+    try:
+        absolute_path: Path = storage_service.get_file_path(documento.file_path)
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"File not found on filesystem: {documento.file_name}",
+        )
+
+    def file_generator() -> Generator[bytes, None, None]:
+        with absolute_path.open("rb") as f:
+            while chunk := f.read(_DOWNLOAD_CHUNK_SIZE):
+                yield chunk
+
+    headers = {
+        "Content-Disposition": f'attachment; filename="{documento.file_name}"',
+        "Content-Length": str(documento.file_size),
+    }
+    return StreamingResponse(
+        file_generator(),
+        media_type=documento.mime_type,
+        headers=headers,
+    )
