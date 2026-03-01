@@ -144,8 +144,9 @@ def upload_documento(
 
     # --- AI Classification (non-blocking: errors only log, document stays saved) ---
     try:
+        abs_path = storage_service.get_file_path(documento.file_path)
         extracted_text = text_extraction_service.extract_text(
-            documento.file_path, documento.mime_type
+            abs_path, documento.mime_type
         )
 
         if extracted_text.strip():
