@@ -121,11 +121,6 @@ export function DocumentiPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clienteFilter, contrattoFilter, tipoFilter]);
 
-  // Reset contratto filter when cliente changes
-  useEffect(() => {
-    setContrattoFilter('');
-  }, [clienteFilter]);
-
   const handleDelete = async (documento: Documento) => {
     if (!window.confirm(`Eliminare il documento "${documento.file_name}"?`)) return;
     try {
@@ -221,7 +216,10 @@ export function DocumentiPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
                 <select
                   value={clienteFilter}
-                  onChange={(e) => setClienteFilter(e.target.value)}
+                  onChange={(e) => {
+                    setClienteFilter(e.target.value);
+                    setContrattoFilter('');
+                  }}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 >
                   <option value="">Tutti</option>
