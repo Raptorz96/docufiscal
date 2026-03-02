@@ -50,6 +50,7 @@ class Cliente(Base):
     codice_fiscale: Mapped[Optional[str]] = mapped_column(
         String(16),
         unique=True,
+        index=True,
         nullable=True,
         doc="Italian tax code (unique)"
     )
@@ -57,6 +58,7 @@ class Cliente(Base):
     partita_iva: Mapped[Optional[str]] = mapped_column(
         String(11),
         unique=True,
+        index=True,
         nullable=True,
         doc="Italian VAT number (unique)"
     )
