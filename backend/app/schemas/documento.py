@@ -27,11 +27,15 @@ class DocumentoUpdate(BaseModel):
 class ClassificazioneOverride(BaseModel):
     """Schema for confirming or correcting AI classification of a document.
 
+    tipo_documento is optional:
+    - None  → "conferma pura": only sets verificato_da_utente=True, tipo unchanged.
+    - value → "override": updates tipo_documento and sets verificato_da_utente=True.
+
     contratto_id uses model_fields_set to distinguish "not sent" (no-op)
     from "sent null" (explicit dissociation).
     """
 
-    tipo_documento: TipoDocumento
+    tipo_documento: Optional[TipoDocumento] = None
     cliente_id: Optional[int] = None
     contratto_id: Optional[int] = None
     note: Optional[str] = None

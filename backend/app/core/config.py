@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     AI_PROVIDER: str = "gemini"
     AI_MODEL: str = "gemini-2.5-flash"
     AI_API_KEY: str = ""
-    CONFIDENCE_THRESHOLD: float = 0.75
+    CONFIDENCE_THRESHOLD: float = 0.80
     MAX_UPLOAD_SIZE: int = 50 * 1024 * 1024  # 50 MB in bytes
     ALLOWED_MIME_TYPES: list[str] = Field(
         default=[

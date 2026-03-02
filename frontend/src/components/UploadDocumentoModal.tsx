@@ -12,7 +12,7 @@ import type { Contratto } from '@/types/contratto';
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (doc: Documento) => void;
 }
 
 const EMPTY_FORM = {
@@ -68,10 +68,7 @@ export function UploadDocumentoModal({ isOpen, onClose, onSuccess }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.clienteId) {
-      setError('Il cliente è obbligatorio');
-      return;
-    }
+    // Cliente is now optional for AI auto-matching
     if (!file) {
       setError('Il file è obbligatorio');
       return;
@@ -88,8 +85,8 @@ export function UploadDocumentoModal({ isOpen, onClose, onSuccess }: Props) {
       if (formData.note.trim()) fd.append('note', formData.note.trim());
       fd.append('file', file);
 
-      await uploadDocumento(fd);
-      onSuccess();
+      const newDoc = await uploadDocumento(fd);
+      onSuccess(newDoc);
     } catch (err) {
       if (err instanceof AxiosError) {
         const detail = err.response?.data?.detail;
@@ -108,7 +105,7 @@ export function UploadDocumentoModal({ isOpen, onClose, onSuccess }: Props) {
 
   if (!isOpen) return null;
 
-  const isSubmitDisabled = loading || !formData.clienteId || !file;
+  const isSubmitDisabled = loading || !file;
 
   return (
     <div
@@ -141,14 +138,13 @@ export function UploadDocumentoModal({ isOpen, onClose, onSuccess }: Props) {
           {/* Cliente */}
           <div>
             <label htmlFor="upload-cliente" className="block text-sm font-medium text-gray-700 mb-1">
-              Cliente *
+              Cliente (opzionale per auto-matching)
             </label>
             <select
               id="upload-cliente"
               value={formData.clienteId}
               onChange={handleClienteChange}
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              required
             >
               <option value="">Seleziona cliente</option>
               {clienti.map((c) => (

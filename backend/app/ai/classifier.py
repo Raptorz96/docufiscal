@@ -25,7 +25,13 @@ class ClassificationResult:
     """Confidence score in the range [0.0, 1.0]."""
 
     cliente_suggerito: str | None = None
-    """Client name or tax code recognised in the document text, if any."""
+    """Client name recognised in the document text, if any."""
+
+    codice_fiscale: str | None = None
+    """Italian tax code (CF) extracted from the document."""
+
+    partita_iva: str | None = None
+    """Italian VAT number (PI) extracted from the document."""
 
     contratto_suggerito: str | None = None
     """Contract type recognised in the document text, if any."""

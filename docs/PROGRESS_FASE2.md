@@ -44,16 +44,22 @@ Modelli dati completi, CRUD API, frontend pagine principali.
 - Output colorato ANSI: ✅ creato / ⏭️ skip / ❌ errore
 - Eseguibile con: `cd backend && python -m scripts.seed`
 
-### Task 8 — Frontend Pagina Clienti
-- [ ] Lista clienti con filtro tipo
-- [ ] Form crea/modifica cliente
-- [ ] Elimina con conferma
+### Fix extra ✅ — Sidebar + Layout + bcrypt
+- `src/layouts/AppLayout.tsx`: sidebar responsive (desktop fissa, mobile slide-in)
+- NavLink con active state, icone SVG, user info + logout
+- `src/pages/DashboardPage.tsx`: estratta da App.tsx
+- `src/App.tsx`: nested routes con ProtectedRoute wrapping AppLayout
+- Layout fullscreen fix: html/body/root height 100%
+- `import type` fix per verbatimModuleSyntax in authService.ts
+- `postcss.config.js` → `postcss.config.cjs` per compatibilità ESM
+- `bcrypt==4.0.1` pinnato in requirements.txt (compatibilità passlib)
 
-### Task 9 — Frontend Pagina Contratti
-- [ ] Lista contratti con filtri
-- [ ] Form crea/modifica contratto
-- [ ] Badge stato colorato
+## Fase 2 COMPLETATA
 
-### Task 10 — Dashboard
-- [ ] Statistiche: totale clienti, contratti attivi/scaduti/sospesi
-- [ ] Grafici riassuntivi
+## Convenzioni
+- Backend: snake_case, type hints, docstrings, SQLAlchemy 2.0
+- Frontend: camelCase, functional components, TypeScript strict, no any, import type per type-only
+- Frontend hooks: useCallback per fetch, useRef per timer/flags/maps
+- API: RESTful, /api/v1/, JSON, HTTPException
+- Git: conventional commits
+- Workflow: spec in chat → Claude Code implementa → code review → fix → push

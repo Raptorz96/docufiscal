@@ -70,6 +70,8 @@ class ClaudeClassifier(BaseClassifier):
                 tipo_documento_raw=data.get("tipo_documento_raw", ""),
                 confidence=confidence,
                 cliente_suggerito=data.get("cliente_suggerito") or None,
+                codice_fiscale=data.get("codice_fiscale") or None,
+                partita_iva=data.get("partita_iva") or None,
                 contratto_suggerito=data.get("contratto_suggerito") or None,
                 raw_response=data,
             )

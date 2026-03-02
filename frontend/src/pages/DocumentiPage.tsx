@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AxiosError } from 'axios';
-import { getDocumenti, deleteDocumento, downloadDocumento } from '@/services/documentoService';
+import { getDocumenti, deleteDocumento, downloadDocumento, classificaDocumento } from '@/services/documentoService';
 import { getClienti } from '@/services/clientiService';
 import { getContratti } from '@/services/contrattiService';
 import { TIPO_LABELS, TIPO_BADGE_CLASSES } from '@/utils/documentoLabels';
@@ -22,10 +22,19 @@ export function DocumentiPage() {
   const [contrattoFilter, setContrattoFilter] = useState('');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [selectedDocumento, setSelectedDocumento] = useState<Documento | null>(null);
+  const [confirmingId, setConfirmingId] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const clientiMap = useRef<Map<number, string>>(new Map());
   const contrattiMap = useRef<Map<number, string>>(new Map());
   const isInitialMount = useRef(true);
+  const toastTimeout = useRef<any>(null);
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    if (toastTimeout.current) clearTimeout(toastTimeout.current);
+    setToast({ message, type });
+    toastTimeout.current = setTimeout(() => setToast(null), 5000);
+  }, []);
 
   const loadSupportData = useCallback(async () => {
     try {
@@ -38,9 +47,8 @@ export function DocumentiPage() {
       clientiMap.current = new Map(
         clientiData.map((c) => [c.id, `${c.nome} ${c.cognome ?? ''}`.trim()])
       );
-      contrattiMap.current = new Map(
-        contrattiData.map((c) => [c.id, `Contratto #${c.id}`])
-      );
+      // Also update local copy for easier access in showToast if needed
+      setClienti(clientiData);
     } catch (err) {
       if (err instanceof AxiosError) {
         setError(err.response?.data?.detail ?? 'Errore nel caricamento dei dati');
@@ -125,6 +133,18 @@ export function DocumentiPage() {
     setSelectedDocumento(null);
   }, []);
 
+  const handleConfermaInline = useCallback(async (doc: Documento) => {
+    setConfirmingId(doc.id);
+    try {
+      const updated = await classificaDocumento(doc.id, {});
+      handleClassificaSuccess(updated);
+    } catch {
+      alert('Errore durante la conferma. Riprova.');
+    } finally {
+      setConfirmingId(null);
+    }
+  }, [handleClassificaSuccess]);
+
   const getTipoBadge = (tipo: TipoDocumento) => (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${TIPO_BADGE_CLASSES[tipo]}`}>
       {TIPO_LABELS[tipo]}
@@ -145,6 +165,14 @@ export function DocumentiPage() {
       return <span className="text-xs text-gray-400">—</span>;
     }
     const label = doc.tipo_documento_raw ?? TIPO_LABELS[doc.tipo_documento];
+    const isConfirming = confirmingId === doc.id;
+    const spinnerSm = (
+      <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+      </svg>
+    );
+
     // CASO B: high confidence
     if (doc.confidence_score !== null && doc.confidence_score >= 0.75) {
       const pct = Math.round(doc.confidence_score * 100);
@@ -155,8 +183,16 @@ export function DocumentiPage() {
           </span>
           <div className="flex gap-1">
             <button
+              onClick={() => handleConfermaInline(doc)}
+              disabled={isConfirming}
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isConfirming ? spinnerSm : '✓'} Conferma
+            </button>
+            <button
               onClick={() => setSelectedDocumento(doc)}
-              className="px-2 py-0.5 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100"
+              disabled={isConfirming}
+              className="px-2 py-0.5 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100 disabled:opacity-50"
             >
               Correggi
             </button>
@@ -171,12 +207,22 @@ export function DocumentiPage() {
         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
           {pct !== null ? `${label} · ${pct}%` : 'Non classificato'}
         </span>
-        <button
-          onClick={() => setSelectedDocumento(doc)}
-          className="px-2 py-0.5 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100 self-start"
-        >
-          Correggi
-        </button>
+        <div className="flex gap-1">
+          <button
+            onClick={() => handleConfermaInline(doc)}
+            disabled={isConfirming}
+            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isConfirming ? spinnerSm : '✓'} Conferma
+          </button>
+          <button
+            onClick={() => setSelectedDocumento(doc)}
+            disabled={isConfirming}
+            className="px-2 py-0.5 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100 disabled:opacity-50"
+          >
+            Correggi
+          </button>
+        </div>
       </div>
     );
   };
@@ -366,7 +412,12 @@ export function DocumentiPage() {
       <UploadDocumentoModal
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
-        onSuccess={() => { setIsUploadOpen(false); loadDocumenti(); }}
+        onSuccess={(doc) => {
+          setIsUploadOpen(false);
+          loadDocumenti();
+          const clienteName = clientiMap.current.get(doc.cliente_id) || `ID ${doc.cliente_id}`;
+          showToast(`Documento caricato con successo ed associato a: ${clienteName}`);
+        }}
       />
 
       {selectedDocumento !== null && (
@@ -377,6 +428,32 @@ export function DocumentiPage() {
           onClose={() => setSelectedDocumento(null)}
           onSuccess={handleClassificaSuccess}
         />
+      )}
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 transform translate-y-0 opacity-100">
+          <div className={`rounded-lg px-4 py-3 shadow-lg flex items-center gap-3 ${toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+            }`}>
+            {toast.type === 'success' ? (
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
+            <span className="text-sm font-medium">{toast.message}</span>
+            <button
+              onClick={() => setToast(null)}
+              className="ml-auto p-1 hover:bg-white/20 rounded transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

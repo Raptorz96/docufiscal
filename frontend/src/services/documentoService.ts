@@ -29,7 +29,10 @@ export const updateDocumento = async (id: number, data: DocumentoUpdate): Promis
   return response.data;
 };
 
-export const classificaDocumento = async (id: number, data: ClassificazioneOverride): Promise<Documento> => {
+export const classificaDocumento = async (
+  id: number,
+  data: Partial<ClassificazioneOverride>,
+): Promise<Documento> => {
   const response = await api.patch(`/documenti/${id}/classifica`, data);
   return response.data;
 };

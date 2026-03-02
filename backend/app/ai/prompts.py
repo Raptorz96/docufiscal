@@ -56,18 +56,32 @@ def build_classification_prompt(
     if len(text) > MAX_TEXT_CHARS:
         truncated_text += "\n[... testo troncato ...]"
 
-    return f"""Sei un assistente specializzato nella classificazione di documenti fiscali italiani \
-per uno studio di commercialisti.
+    return f"""PERSONA:
+Sei un Consulente Fiscale Senior esperto in fiscalità italiana e gestione documentale per studi professionali. Il tuo compito è analizzare documenti contabili e fiscali con estrema precisione.
 
-Analizza il seguente testo estratto da un documento e classificalo.
+TASK:
+1. Analizza il TESTO ESTRATTO (OCR) fornito in fondo.
+2. Identifica la categoria corretta tra quelle in TIPI DOCUMENTO DISPONIBILI.
+3. Identifica il CLIENTE se presente nel testo (confrontandolo con la LISTA CLIENTI CONTESTUALE).
+4. Estrai, se presenti, il Codice Fiscale (CF) e la Partita IVA (PI) del soggetto a cui si riferisce il documento.
+5. Fornisci una descrizione specifica in 'tipo_documento_raw' (es: "Fattura Proforma", "Modello F24 Semplificato").
+6. Determina la 'confidence' (0.0-1.0). Sii prudente se il testo è molto disturbato o ambiguo.
+
+CONTEXT & RULES:
+- F24: Cerca parole come "Delega irrevocabile", "Sezione Erario/INPS", codici tributo.
+- FATTURA: Cerca "P.IVA", "Imponibile", "Aliquota", "Totale a pagare".
+- CU: Cerca "Certificazione di cui all'art. 4", "Ritenute operate".
+- DICHIARAZIONE REDDITI: Cerca "Quadro RN", "Modello 730", "Redditi Persone Fisiche".
+- Se il testo non permette una classificazione certa, usa 'altro'.
 
 TIPI DOCUMENTO DISPONIBILI:
 {tipo_lines}
+
+LISTA CLIENTI CONTESTUALE:
 {clienti_section}
-TESTO DEL DOCUMENTO:
+
+TESTO ESTRATTO DAL DOCUMENTO:
 {truncated_text}
 
-Classifica il documento. Per "confidence" usa un valore da 0.0 a 1.0 \
-che indica quanto sei sicuro della classificazione.
-Per "tipo_documento" usa SOLO uno dei valori dalla lista sopra.
-Per "tipo_documento_raw" fornisci una descrizione libera del tipo di documento."""
+Restituisci il risultato in formato JSON coerente con lo schema richiesto.
+"""

@@ -37,7 +37,7 @@ interface DocumentoUpdate {
 }
 
 interface ClassificazioneOverride {
-  tipo_documento: TipoDocumento;
+  tipo_documento?: TipoDocumento; // opzionale: undefined = conferma pura senza cambio tipo
   cliente_id?: number;
   contratto_id?: number | null;
   note?: string | null;
