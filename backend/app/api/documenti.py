@@ -217,6 +217,8 @@ def list_documenti(
     cliente_id: Optional[int] = Query(None, description="Filter by cliente_id"),
     contratto_id: Optional[int] = Query(None, description="Filter by contratto_id"),
     tipo_documento: Optional[str] = Query(None, description="Filter by tipo_documento"),
+    unassigned: bool = Query(False, description="Filter only unassigned documents (cliente_id is null)"),
+    search: Optional[str] = Query(None, description="Search in file name"),
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=500, description="Maximum number of records to return"),
 ) -> list[DocumentoOut]:
@@ -242,6 +244,13 @@ def list_documenti(
         query = query.filter(Documento.contratto_id == contratto_id)
     if tipo_documento is not None:
         query = query.filter(Documento.tipo_documento == tipo_documento)
+    
+    if unassigned:
+        query = query.filter(Documento.cliente_id == None)
+    
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(Documento.file_name.ilike(search_term))
 
     documenti = (
         query
@@ -281,14 +290,14 @@ def get_documento(
     return DocumentoOut.model_validate(documento)
 
 
-@router.put("/{documento_id}", response_model=DocumentoOut)
+@router.patch("/{documento_id}", response_model=DocumentoOut)
 def update_documento(
     documento_id: int,
     update_data: DocumentoUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> DocumentoOut:
-    """Update document metadata. File fields (file_name, file_path, file_size, mime_type) are immutable.
+    """Update document metadata with optional file relocation if cliente_id changes.
 
     Args:
         documento_id: ID of the document to update.
@@ -300,8 +309,8 @@ def update_documento(
         DocumentoOut: The updated document record.
 
     Raises:
-        HTTPException 400: If the new contratto_id does not belong to the document's cliente.
-        HTTPException 404: If the document or new contratto_id is not found.
+        HTTPException 400: If the new contratto_id does not belong to the target cliente.
+        HTTPException 404: If the document, target cliente, or new contratto_id is not found.
     """
     documento = db.query(Documento).filter(Documento.id == documento_id).first()
     if not documento:
@@ -310,25 +319,53 @@ def update_documento(
             detail=f"Documento {documento_id} not found",
         )
 
-    # Validate new contratto_id if being changed
-    if update_data.contratto_id is not None:
-        contratto = db.query(Contratto).filter(Contratto.id == update_data.contratto_id).first()
+    # Effective IDs for validation
+    new_cliente_id = update_data.cliente_id if "cliente_id" in update_data.model_fields_set else documento.cliente_id
+    new_contratto_id = update_data.contratto_id if "contratto_id" in update_data.model_fields_set else documento.contratto_id
+
+    # Validate target cliente if being changed
+    if update_data.cliente_id is not None and update_data.cliente_id != documento.cliente_id:
+        cliente = db.query(Cliente).filter(Cliente.id == update_data.cliente_id).first()
+        if not cliente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Cliente {update_data.cliente_id} not found",
+            )
+
+    # Validate new contratto_id if being changed or if cliente changed
+    if new_contratto_id is not None:
+        contratto = db.query(Contratto).filter(Contratto.id == new_contratto_id).first()
         if not contratto:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Contratto {update_data.contratto_id} not found",
+                detail=f"Contratto {new_contratto_id} not found",
             )
-        if contratto.cliente_id != documento.cliente_id:
+        if contratto.cliente_id != new_cliente_id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=(
-                    f"Contratto {update_data.contratto_id} does not belong to "
-                    f"cliente {documento.cliente_id}"
-                ),
+                detail=f"Contratto {new_contratto_id} does not belong to cliente {new_cliente_id}",
             )
 
-    fields: Dict[str, Any] = update_data.model_dump(exclude_unset=True)
-    for field, value in fields.items():
+    # Relocate physical file if cliente_id or contratto_id changed
+    cliente_changed = "cliente_id" in update_data.model_fields_set and update_data.cliente_id != documento.cliente_id
+    contratto_changed = "contratto_id" in update_data.model_fields_set and update_data.contratto_id != documento.contratto_id
+    
+    if (cliente_changed or contratto_changed) and new_cliente_id is not None:
+        try:
+            old_path = documento.file_path
+            new_path = storage_service.move_file(old_path, new_cliente_id, new_contratto_id)
+            documento.file_path = new_path
+            logger.info("Relocated file %d to client %s, contract %s", documento_id, new_cliente_id, new_contratto_id)
+        except Exception as e:
+            logger.error("Failed to relocate file: %s", str(e))
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to relocate physical file: {str(e)}"
+            )
+
+    # Apply remaining updates
+    update_dict = update_data.model_dump(exclude_unset=True)
+    for field, value in update_dict.items():
         setattr(documento, field, value)
 
     db.commit()

@@ -5,6 +5,8 @@ interface GetDocumentiParams {
   cliente_id?: number;
   contratto_id?: number;
   tipo_documento?: string;
+  unassigned?: boolean;
+  search?: string;
   skip?: number;
   limit?: number;
 }
@@ -25,7 +27,7 @@ export const uploadDocumento = async (data: FormData): Promise<Documento> => {
 };
 
 export const updateDocumento = async (id: number, data: DocumentoUpdate): Promise<Documento> => {
-  const response = await api.put(`/documenti/${id}`, data);
+  const response = await api.patch(`/documenti/${id}`, data);
   return response.data;
 };
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import { getDocumenti, deleteDocumento, downloadDocumento, classificaDocumento } from '@/services/documentoService';
 import { getClienti } from '@/services/clientiService';
@@ -24,6 +25,9 @@ export function DocumentiPage() {
   const [selectedDocumento, setSelectedDocumento] = useState<Documento | null>(null);
   const [confirmingId, setConfirmingId] = useState<number | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchFilter, setSearchFilter] = useState('');
+  const [unassignedFilter, setUnassignedFilter] = useState(searchParams.get('unassigned') === 'true');
 
   const clientiMap = useRef<Map<number, string>>(new Map());
   const contrattiMap = useRef<Map<number, string>>(new Map());
@@ -47,8 +51,6 @@ export function DocumentiPage() {
       clientiMap.current = new Map(
         clientiData.map((c) => [c.id, `${c.nome} ${c.cognome ?? ''}`.trim()])
       );
-      // Also update local copy for easier access in showToast if needed
-      setClienti(clientiData);
     } catch (err) {
       if (err instanceof AxiosError) {
         setError(err.response?.data?.detail ?? 'Errore nel caricamento dei dati');
@@ -62,10 +64,13 @@ export function DocumentiPage() {
     try {
       setLoading(true);
       setError(null);
-      const params: { cliente_id?: number; contratto_id?: number; tipo_documento?: string } = {};
+      const params: { cliente_id?: number; contratto_id?: number; tipo_documento?: string; search?: string; unassigned?: boolean } = {};
       if (clienteFilter) params.cliente_id = parseInt(clienteFilter);
       if (contrattoFilter) params.contratto_id = parseInt(contrattoFilter);
       if (tipoFilter) params.tipo_documento = tipoFilter;
+      if (searchFilter) params.search = searchFilter;
+      if (unassignedFilter) params.unassigned = true;
+
       const data = await getDocumenti(params);
       setDocumenti(data);
     } catch (err) {
@@ -77,7 +82,7 @@ export function DocumentiPage() {
     } finally {
       setLoading(false);
     }
-  }, [clienteFilter, contrattoFilter, tipoFilter]);
+  }, [clienteFilter, contrattoFilter, tipoFilter, searchFilter, unassignedFilter]);
 
   useEffect(() => {
     const init = async () => {
@@ -95,7 +100,15 @@ export function DocumentiPage() {
     }
     loadDocumenti();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clienteFilter, contrattoFilter, tipoFilter]);
+  }, [clienteFilter, contrattoFilter, tipoFilter, searchFilter, unassignedFilter]);
+
+  // Synchronize unassigned from URL if it changes
+  useEffect(() => {
+    const isUnassigned = searchParams.get('unassigned') === 'true';
+    if (isUnassigned !== unassignedFilter) {
+      setUnassignedFilter(isUnassigned);
+    }
+  }, [searchParams]);
 
   const handleDelete = async (documento: Documento) => {
     if (!window.confirm(`Eliminare il documento "${documento.file_name}"?`)) return;
@@ -152,7 +165,6 @@ export function DocumentiPage() {
   );
 
   const getAiBadge = (doc: Documento) => {
-    // CASO A: already verified by user
     if (doc.verificato_da_utente) {
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -160,7 +172,6 @@ export function DocumentiPage() {
         </span>
       );
     }
-    // CASO D: AI never ran
     if (doc.classificazione_ai === null) {
       return <span className="text-xs text-gray-400">—</span>;
     }
@@ -173,7 +184,6 @@ export function DocumentiPage() {
       </svg>
     );
 
-    // CASO B: high confidence
     if (doc.confidence_score !== null && doc.confidence_score >= 0.75) {
       const pct = Math.round(doc.confidence_score * 100);
       return (
@@ -200,7 +210,6 @@ export function DocumentiPage() {
         </div>
       );
     }
-    // CASO C: low / missing confidence
     const pct = doc.confidence_score !== null ? Math.round(doc.confidence_score * 100) : null;
     return (
       <div className="flex flex-col gap-1">
@@ -227,7 +236,6 @@ export function DocumentiPage() {
     );
   };
 
-  // Contratti visibili nel select: filtrati per cliente se selezionato
   const contrattiFiltered = clienteFilter
     ? contratti.filter((c) => c.cliente_id === parseInt(clienteFilter))
     : contratti;
@@ -259,7 +267,6 @@ export function DocumentiPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
         {/* Header */}
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
@@ -276,10 +283,9 @@ export function DocumentiPage() {
           </div>
         </div>
 
-        <div className="mt-6 bg-white shadow-sm rounded-lg">
-
+        <div className="mt-6 bg-white shadow-sm rounded-lg overflow-hidden">
           {/* Filtri */}
-          <div className="px-6 py-4 border-b border-gray-200">
+          <div className="px-6 py-4 border-b border-gray-200 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
@@ -289,7 +295,8 @@ export function DocumentiPage() {
                     setClienteFilter(e.target.value);
                     setContrattoFilter('');
                   }}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  disabled={unassignedFilter}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   <option value="">Tutti</option>
                   {clienti.map((c) => (
@@ -317,7 +324,8 @@ export function DocumentiPage() {
                 <select
                   value={contrattoFilter}
                   onChange={(e) => setContrattoFilter(e.target.value)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  disabled={unassignedFilter}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   <option value="">Tutti</option>
                   {contrattiFiltered.map((c) => (
@@ -326,6 +334,50 @@ export function DocumentiPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Cerca nel nome file</label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </span>
+                  <input
+                    type="text"
+                    value={searchFilter}
+                    onChange={(e) => setSearchFilter(e.target.value)}
+                    placeholder="Es: fattura.pdf..."
+                    className="block w-full pl-10 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  />
+                </div>
+              </div>
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newVal = !unassignedFilter;
+                    setUnassignedFilter(newVal);
+                    if (newVal) {
+                      setSearchParams({ unassigned: 'true' });
+                      setClienteFilter('');
+                      setContrattoFilter('');
+                    } else {
+                      searchParams.delete('unassigned');
+                      setSearchParams(searchParams);
+                    }
+                  }}
+                  className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors border-2 ${unassignedFilter
+                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                    : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                    }`}
+                >
+                  <span className={`w-2 h-2 rounded-full mr-2 ${unassignedFilter ? 'bg-amber-500 animate-pulse' : 'bg-gray-400'}`}></span>
+                  {unassignedFilter ? 'Mostrando: Da Assegnare' : 'Filtra: Da Assegnare'}
+                </button>
               </div>
             </div>
           </div>
@@ -340,68 +392,75 @@ export function DocumentiPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nome file
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tipo Documento
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Classificazione AI
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Cliente
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Dimensione
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Data caricamento
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Azioni
-                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome file</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo Documento</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classificazione AI</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dimensione</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Azioni</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {documenti.map((doc) => (
-                    <tr key={doc.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {doc.file_name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getTipoBadge(doc.tipo_documento)}
-                      </td>
-                      <td className="px-6 py-4">
-                        {getAiBadge(doc)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {clientiMap.current.get(doc.cliente_id) ?? '—'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatFileSize(doc.file_size)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(doc.created_at)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleDownload(doc)}
-                            className="text-indigo-600 hover:text-indigo-900"
-                          >
-                            Download
-                          </button>
-                          <button
-                            onClick={() => handleDelete(doc)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Elimina
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {documenti.map((doc) => {
+                    const isUnassigned = doc.cliente_id === null;
+                    return (
+                      <tr key={doc.id} className={`${isUnassigned ? 'bg-red-50/50 hover:bg-red-50' : 'hover:bg-gray-50'} transition-colors`}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {doc.file_name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {getTipoBadge(doc.tipo_documento)}
+                        </td>
+                        <td className="px-6 py-4">
+                          {getAiBadge(doc)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {isUnassigned ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                              Da Assegnare
+                            </span>
+                          ) : (
+                            <span className="text-sm text-gray-600 font-medium">
+                              {clientiMap.current.get(doc.cliente_id!) ?? '—'}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatFileSize(doc.file_size)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(doc.created_at)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex items-center space-x-4">
+                            <button
+                              onClick={() => setSelectedDocumento(doc)}
+                              className="inline-flex items-center text-amber-600 hover:text-amber-900 group"
+                              title="Modifica Classificazione"
+                            >
+                              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                              <span>Modifica</span>
+                            </button>
+                            <button
+                              onClick={() => handleDownload(doc)}
+                              className="text-indigo-600 hover:text-indigo-900 font-medium"
+                            >
+                              Download
+                            </button>
+                            <button
+                              onClick={() => handleDelete(doc)}
+                              className="text-red-500 hover:text-red-700 font-medium"
+                            >
+                              Elimina
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -429,11 +488,10 @@ export function DocumentiPage() {
           onSuccess={handleClassificaSuccess}
         />
       )}
-      {/* Toast Notification */}
+
       {toast && (
-        <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 transform translate-y-0 opacity-100">
-          <div className={`rounded-lg px-4 py-3 shadow-lg flex items-center gap-3 ${toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-            }`}>
+        <div className="fixed bottom-4 right-4 z-50">
+          <div className={`rounded-lg px-4 py-3 shadow-lg flex items-center gap-3 ${toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
             {toast.type === 'success' ? (
               <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />

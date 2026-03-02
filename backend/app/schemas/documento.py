@@ -17,6 +17,7 @@ class DocumentoCreate(BaseModel):
 
 class DocumentoUpdate(BaseModel):
     """Schema for documento update request with all optional fields."""
+    cliente_id: Optional[int] = None
     tipo_documento: Optional[TipoDocumento] = None
     contratto_id: Optional[int] = None
     tipo_documento_raw: Optional[str] = None
