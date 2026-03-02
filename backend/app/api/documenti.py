@@ -98,21 +98,6 @@ def upload_documento(
     if mime_type == "application/octet-stream" and mime_for_check:
         mime_type = mime_for_check
 
-    # --- Save file to storage (temporary if no cliente_id) ---
-    file_path, file_size = storage_service.save_file(file, cliente_id, contratto_id)
-
-    # --- Check size limit ---
-    if file_size > settings.MAX_UPLOAD_SIZE:
-        storage_service.delete_file(file_path)
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File too large: {file_size} bytes.",
-        )
-
-    mime_type = storage_service.get_mime_type(file.filename or "")
-    if mime_type == "application/octet-stream" and mime_for_check:
-        mime_type = mime_for_check
-
     # --- Classification and Match (Mandatory if cliente_id missing) ---
     abs_path = storage_service.get_file_path(file_path)
     extracted_text = ""

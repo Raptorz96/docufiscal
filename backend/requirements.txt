@@ -16,3 +16,4 @@ Pillow
 pdf2image
 google-genai
 anthropic
+fpdf2
