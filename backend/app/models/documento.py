@@ -57,11 +57,11 @@ class Documento(Base):
         doc="Primary key identifier"
     )
 
-    cliente_id: Mapped[int] = mapped_column(
+    cliente_id: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey("clienti.id"),
-        nullable=False,
-        doc="Foreign key to the client"
+        nullable=True,
+        doc="Foreign key to the client (optional)"
     )
 
     contratto_id: Mapped[Optional[int]] = mapped_column(

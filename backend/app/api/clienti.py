@@ -105,6 +105,21 @@ def create_cliente(
     Raises:
         HTTPException: 409 if codice_fiscale or partita_iva already exists
     """
+    # --- Normalization and Formatting ---
+    if cliente_data.codice_fiscale:
+        val = cliente_data.codice_fiscale
+        val = val.replace(" ", "").strip().upper() if val and val.strip() != "" else None
+        if val and val.startswith("IT"):
+            val = val[2:]
+        cliente_data.codice_fiscale = val
+
+    if cliente_data.partita_iva:
+        val = cliente_data.partita_iva
+        val = val.replace(" ", "").strip().upper() if val and val.strip() != "" else None
+        if val and val.startswith("IT"):
+            val = val[2:]
+        cliente_data.partita_iva = val
+
     # Check for duplicate codice_fiscale
     if cliente_data.codice_fiscale:
         existing_cf = db.query(Cliente).filter(
@@ -167,10 +182,30 @@ def update_cliente(
             detail="Cliente not found"
         )
 
+    # Update cliente with only provided fields
+    update_data = cliente_data.model_dump(exclude_unset=True)
+    
+    # Normalizzazione Codice Fiscale
+    if "codice_fiscale" in update_data:
+        val = update_data["codice_fiscale"]
+        val = val.replace(" ", "").strip().upper() if val and val.strip() != "" else None
+        if val and val.startswith("IT"):
+            val = val[2:]
+        update_data["codice_fiscale"] = val
+
+    # Normalizzazione Partita IVA
+    if "partita_iva" in update_data:
+        val = update_data["partita_iva"]
+        val = val.replace(" ", "").strip().upper() if val and val.strip() != "" else None
+        if val and val.startswith("IT"):
+            val = val[2:]
+        update_data["partita_iva"] = val
+
     # Check for duplicate codice_fiscale (excluding current cliente)
-    if cliente_data.codice_fiscale is not None:
+    cf_to_check = update_data.get("codice_fiscale")
+    if cf_to_check:
         existing_cf = db.query(Cliente).filter(
-            Cliente.codice_fiscale == cliente_data.codice_fiscale,
+            Cliente.codice_fiscale == cf_to_check,
             Cliente.id != cliente_id
         ).first()
         if existing_cf:
@@ -180,9 +215,10 @@ def update_cliente(
             )
 
     # Check for duplicate partita_iva (excluding current cliente)
-    if cliente_data.partita_iva is not None:
+    pi_to_check = update_data.get("partita_iva")
+    if pi_to_check:
         existing_piva = db.query(Cliente).filter(
-            Cliente.partita_iva == cliente_data.partita_iva,
+            Cliente.partita_iva == pi_to_check,
             Cliente.id != cliente_id
         ).first()
         if existing_piva:
@@ -191,8 +227,7 @@ def update_cliente(
                 detail="Another cliente with this partita_iva already exists"
             )
 
-    # Update cliente with only provided fields
-    update_data = cliente_data.model_dump(exclude_unset=True)
+    # Applica le modifiche al database (SENZA filtri 'if value:' che ignorano i None)
     for field, value in update_data.items():
         setattr(cliente, field, value)
 

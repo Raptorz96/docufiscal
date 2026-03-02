@@ -5,6 +5,7 @@ from typing import Any, Dict, Generator, Optional
 from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from starlette.responses import StreamingResponse
 
@@ -126,34 +127,34 @@ def upload_documento(
         )
 
         # --- Local Matching Logic ---
+        print(f"DATI ESTRATTI DALL'IA: {classification_result}")
         if matched_cliente_id is None:
             cf = classification_result.codice_fiscale
             pi = classification_result.partita_iva
             
-            # Try match by CF
-            if cf:
-                found = db.query(Cliente).filter(Cliente.codice_fiscale == cf).first()
-                if found:
-                    matched_cliente_id = found.id
-                    logger.info("Auto-matched client by CODE_FISCALE: %s -> %d", cf, found.id)
+            # Normalizzazione dati estratti
+            if cf and isinstance(cf, str):
+                cf = cf.replace(" ", "").strip().upper()
+                if cf.startswith("IT"):
+                    cf = cf[2:]
+            if pi and isinstance(pi, str):
+                pi = pi.replace(" ", "").strip().upper()
+                if pi.startswith("IT"):
+                    pi = pi[2:]
             
-            # Try match by PI if CF didn't work
-            if not matched_cliente_id and pi:
-                found = db.query(Cliente).filter(Cliente.partita_iva == pi).first()
+            if cf or pi:
+                found = db.query(Cliente).filter(
+                    or_(
+                        Cliente.codice_fiscale == cf if cf else False,
+                        Cliente.partita_iva == pi if pi else False
+                    )
+                ).first()
                 if found:
                     matched_cliente_id = found.id
-                    logger.info("Auto-matched client by PARTITA_IVA: %s -> %d", pi, found.id)
-
-    # --- Final validation of cliente_id ---
-    if matched_cliente_id is None:
-        storage_service.delete_file(file_path)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Impossibile associare il documento a un cliente. Per favore selezionalo manualmente."
-        )
+                    logger.info("Auto-matched client: %s %s (ID: %d)", found.nome, found.cognome or "", found.id)
 
     # --- Use the matched client to check contratto ---
-    if contratto_id and not cliente_id:
+    if contratto_id and matched_cliente_id:
         # We need to verify the found client owns the contract if provided
         contratto = db.query(Contratto).filter(Contratto.id == contratto_id).first()
         if contratto and contratto.cliente_id != matched_cliente_id:
@@ -163,8 +164,8 @@ def upload_documento(
                 detail=f"Il contratto {contratto_id} non appartiene al cliente identificato ({matched_cliente_id})"
             )
 
-    # --- Relocate file if it was unassigned ---
-    if cliente_id is None:
+    # --- Relocate file if it was unassigned AND a match was found ---
+    if cliente_id is None and matched_cliente_id is not None:
         try:
             old_path = file_path
             file_path = storage_service.move_file(old_path, matched_cliente_id, contratto_id)

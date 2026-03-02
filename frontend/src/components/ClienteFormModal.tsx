@@ -72,8 +72,8 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
       const dataToSubmit: ClienteCreate | ClienteUpdate = {
         nome: formData.nome.trim(),
         cognome: formData.cognome.trim() || undefined,
-        codice_fiscale: formData.codice_fiscale.trim() || undefined,
-        partita_iva: formData.partita_iva.trim() || undefined,
+        codice_fiscale: formData.codice_fiscale.trim() || "",
+        partita_iva: formData.partita_iva.trim() || "",
         tipo: formData.tipo,
         email: formData.email.trim() || undefined,
         telefono: formData.telefono.trim() || undefined

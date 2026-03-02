@@ -46,7 +46,7 @@ class DocumentoOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    cliente_id: int
+    cliente_id: Optional[int] = None
     contratto_id: Optional[int] = None
     tipo_documento: str
     tipo_documento_raw: Optional[str] = None
