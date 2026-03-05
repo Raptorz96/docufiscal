@@ -22,6 +22,8 @@ interface Documento {
   mime_type: string;
   classificazione_ai: unknown;
   confidence_score: number | null;
+  macro_categoria?: 'fiscale' | 'lavoro' | 'amministrazione' | 'altro';
+  anno_competenza?: number | null;
   verificato_da_utente: boolean;
   note: string | null;
   created_at: string;
@@ -38,6 +40,8 @@ interface DocumentoUpdate {
 
 interface ClassificazioneOverride {
   tipo_documento?: TipoDocumento; // opzionale: undefined = conferma pura senza cambio tipo
+  macro_categoria?: 'fiscale' | 'lavoro' | 'amministrazione' | 'altro';
+  anno_competenza?: number | null;
   cliente_id?: number;
   contratto_id?: number | null;
   note?: string | null;

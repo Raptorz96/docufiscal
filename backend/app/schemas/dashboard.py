@@ -6,11 +6,11 @@ from pydantic import BaseModel
 
 class ContrattoScadenzaOut(BaseModel):
     id: int
+    cliente_id: int
     cliente_nome: str
     tipo_contratto_nome: str
-    data_fine: date
-    stato: str
-    giorni_alla_scadenza: int  # negative if already expired
+    data_scadenza: date  # Mapped from data_fine
+    giorni_rimanenti: int
 
 
 class DocumentoRecenteOut(BaseModel):

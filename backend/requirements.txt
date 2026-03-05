@@ -17,3 +17,7 @@ pdf2image
 google-genai
 anthropic
 fpdf2
+pymupdf
+pytest-asyncio
+chromadb
+sentence-transformers

@@ -66,8 +66,10 @@ class ClaudeClassifier(BaseClassifier):
             confidence = max(0.0, min(1.0, confidence))
 
             return ClassificationResult(
+                macro_categoria=data.get("macro_categoria", "altro"),
                 tipo_documento=tipo,
                 tipo_documento_raw=data.get("tipo_documento_raw", ""),
+                anno_competenza=data.get("anno_competenza"),
                 confidence=confidence,
                 cliente_suggerito=data.get("cliente_suggerito") or None,
                 codice_fiscale=data.get("codice_fiscale") or None,

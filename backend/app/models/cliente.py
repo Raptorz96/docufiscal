@@ -35,6 +35,14 @@ class Cliente(Base):
         doc="Primary key identifier"
     )
 
+    short_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        unique=True,
+        index=True,
+        nullable=True,
+        doc="Unique numeric short ID for rapid routing"
+    )
+
     nome: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
@@ -112,4 +120,4 @@ class Cliente(Base):
 
     def __repr__(self) -> str:
         """String representation of Cliente instance."""
-        return f"<Cliente(id={self.id}, nome='{self.nome}', cognome='{self.cognome}', tipo='{self.tipo}')>"
+        return f"<Cliente(id={self.id}, short_id={self.short_id}, nome='{self.nome}', cognome='{self.cognome}', tipo='{self.tipo}')>"

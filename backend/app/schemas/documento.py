@@ -4,23 +4,27 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from app.models.documento import TipoDocumento
+from app.models.documento import MacroCategoria, TipoDocumento
 
 
 class DocumentoCreate(BaseModel):
     """Schema for documento creation request."""
     cliente_id: int
     contratto_id: Optional[int] = None
+    macro_categoria: MacroCategoria = MacroCategoria.altro
     tipo_documento: TipoDocumento = TipoDocumento.altro
+    anno_competenza: Optional[int] = None
     note: Optional[str] = None
 
 
 class DocumentoUpdate(BaseModel):
     """Schema for documento update request with all optional fields."""
     cliente_id: Optional[int] = None
+    macro_categoria: Optional[MacroCategoria] = None
     tipo_documento: Optional[TipoDocumento] = None
     contratto_id: Optional[int] = None
     tipo_documento_raw: Optional[str] = None
+    anno_competenza: Optional[int] = None
     note: Optional[str] = None
     verificato_da_utente: Optional[bool] = None
 
@@ -36,9 +40,11 @@ class ClassificazioneOverride(BaseModel):
     from "sent null" (explicit dissociation).
     """
 
+    macro_categoria: Optional[MacroCategoria] = None
     tipo_documento: Optional[TipoDocumento] = None
     cliente_id: Optional[int] = None
     contratto_id: Optional[int] = None
+    anno_competenza: Optional[int] = None
     note: Optional[str] = None
 
 
@@ -49,8 +55,10 @@ class DocumentoOut(BaseModel):
     id: int
     cliente_id: Optional[int] = None
     contratto_id: Optional[int] = None
+    macro_categoria: str
     tipo_documento: str
     tipo_documento_raw: Optional[str] = None
+    anno_competenza: Optional[int] = None
     file_name: str
     file_size: int
     mime_type: str

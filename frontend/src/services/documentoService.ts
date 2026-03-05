@@ -57,3 +57,14 @@ export const downloadDocumento = async (id: number, fileName: string): Promise<v
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 };
+
+/**
+ * Fetch a document as a Blob and return an ObjectURL suitable for use in an iframe.
+ * The caller MUST revoke the URL with `URL.revokeObjectURL(url)` when done to avoid memory leaks.
+ */
+export const getDocumentoBlobUrl = async (id: number): Promise<string> => {
+  const response = await api.get(`/documenti/${id}/view`, {
+    responseType: 'blob',
+  });
+  return URL.createObjectURL(response.data as Blob);
+};

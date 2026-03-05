@@ -5,6 +5,8 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
+import re
+
 logger = logging.getLogger(__name__)
 
 # Singleton cache
@@ -24,6 +26,12 @@ class ClassificationResult:
     confidence: float
     """Confidence score in the range [0.0, 1.0]."""
 
+    macro_categoria: str = "altro"
+    """Enum value from MacroCategoria (e.g. 'fiscale', 'lavoro')."""
+
+    anno_competenza: int | None = None
+    """Reference year for the document."""
+
     cliente_suggerito: str | None = None
     """Client name recognised in the document text, if any."""
 
@@ -40,6 +48,17 @@ class ClassificationResult:
     """Full model response, preserved for debugging."""
 
 
+def extract_short_id(filename: str) -> int | None:
+    """Extract numeric short ID from filename if it follows the #ID_ pattern.
+    
+    Example: "#105_fattura.pdf" -> 105
+    """
+    match = re.search(r"^#?(\d+)[_\s-]", filename)
+    if match:
+        return int(match.group(1))
+    return None
+
+
 class BaseClassifier(ABC):
     """Abstract base class for document classifiers."""
 
@@ -49,18 +68,19 @@ class BaseClassifier(ABC):
         text: str,
         available_types: list[str],
         clienti_context: list[dict] | None = None,
+        skip_client_id: bool = False,
     ) -> ClassificationResult:
-        """Classify a document based on its extracted text.
+        """Classify a document based on its extracted text."""
 
-        Args:
-            text: Text extracted from the document.
-            available_types: List of valid TipoDocumento enum values.
-            clienti_context: Optional list of client dicts with keys
-                ``nome``, ``cognome``, ``codice_fiscale`` for entity matching.
-
-        Returns:
-            A :class:`ClassificationResult` with the classification details.
-        """
+    @abstractmethod
+    async def aclassify(
+        self,
+        text: str,
+        available_types: list[str],
+        clienti_context: list[dict] | None = None,
+        skip_client_id: bool = False,
+    ) -> ClassificationResult:
+        """Asynchronous version of classify."""
 
 
 def get_classifier() -> BaseClassifier:
@@ -92,10 +112,14 @@ def get_classifier() -> BaseClassifier:
         from app.ai.claude_classifier import ClaudeClassifier  # noqa: PLC0415
 
         _classifier_instance = ClaudeClassifier()
+    elif provider == "openai":
+        from app.ai.openai_classifier import OpenAIClassifier  # noqa: PLC0415
+        
+        _classifier_instance = OpenAIClassifier()
     else:
         raise ValueError(
             f"Unsupported AI provider: '{provider}'. "
-            "Supported values are 'gemini' and 'claude'."
+            "Supported values are 'gemini', 'claude', and 'openai'."
         )
 
     return _classifier_instance

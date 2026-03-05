@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import type { FC, ReactNode } from 'react';
+import { useState, type FC, type ReactNode, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useDocument } from '../context/DocumentContext';
+import { PdfDrawer } from '../components/PdfDrawer';
+import { DocumentChatbot } from '../components/DocumentChatbot';
 
 interface NavItem {
   label: string;
@@ -57,8 +59,14 @@ const inactiveLinkClass = 'flex items-center gap-3 px-4 py-2.5 rounded-lg text-s
 
 const AppLayout: FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const { user, logout } = useAuth();
+  const { viewingDocument, setViewingDocument, clienti, contratti, refreshSupportData } = useDocument();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    refreshSupportData();
+  }, [refreshSupportData]);
 
   const handleLogout = () => {
     logout();
@@ -68,14 +76,14 @@ const AppLayout: FC = () => {
   const displayName = user ? `${user.nome} ${user.cognome}` : '';
 
   const sidebarContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Brand */}
-      <div className="px-6 py-5 border-b border-slate-700">
+      <div className="px-6 py-5 border-b border-slate-700 flex-shrink-0">
         <span className="text-white font-bold text-lg tracking-tight">DocuFiscal</span>
       </div>
 
       {/* Nav links */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
@@ -85,15 +93,15 @@ const AppLayout: FC = () => {
             onClick={() => setSidebarOpen(false)}
           >
             {item.icon}
-            <span>{item.label}</span>
+            <span className="truncate">{item.label}</span>
           </NavLink>
         ))}
       </nav>
 
       {/* User + Logout */}
-      <div className="px-3 py-4 border-t border-slate-700">
+      <div className="px-3 py-4 border-t border-slate-700 flex-shrink-0">
         <div className="flex items-center gap-3 px-4 py-2 mb-2">
-          <div className="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-white text-sm font-semibold">
+          <div className="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
             {user?.nome?.[0]?.toUpperCase() ?? '?'}
           </div>
           <span className="text-slate-300 text-sm truncate">{displayName}</span>
@@ -102,11 +110,11 @@ const AppLayout: FC = () => {
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-300 hover:bg-red-600 hover:text-white transition-colors text-sm"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
-          <span>Logout</span>
+          <span className="truncate">Logout</span>
         </button>
       </div>
     </div>
@@ -115,8 +123,13 @@ const AppLayout: FC = () => {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:flex-col w-64 bg-slate-800 flex-shrink-0">
-        {sidebarContent}
+      <aside
+        className={`hidden md:flex md:flex-col bg-slate-800 flex-shrink-0 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-64' : 'w-0'
+          }`}
+      >
+        <div className={`${desktopSidebarOpen ? 'w-64' : 'w-0'} h-full transition-all duration-300 ease-in-out`}>
+          {sidebarContent}
+        </div>
       </aside>
 
       {/* Mobile overlay */}
@@ -134,35 +147,65 @@ const AppLayout: FC = () => {
       {/* Mobile sidebar */}
       <aside
         aria-hidden={!sidebarOpen}
-        inert={!sidebarOpen ? (true as unknown as string) : undefined}
-        className={`fixed inset-y-0 left-0 z-30 w-64 bg-slate-800 flex flex-col transform transition-transform duration-200 md:hidden ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        inert={!sidebarOpen ? true : undefined}
+        className={`fixed inset-y-0 left-0 z-30 w-64 bg-slate-800 flex flex-col transform transition-transform duration-200 md:hidden ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         {sidebarContent}
       </aside>
 
       {/* Main area */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        {/* Mobile top bar */}
-        <header className="md:hidden flex items-center gap-4 px-4 py-3 bg-slate-800 text-white flex-shrink-0">
+        {/* Top bar (Combined Mobile & Desktop Toggle) */}
+        <header className="flex items-center gap-4 px-4 py-3 bg-white border-b border-gray-200 flex-shrink-0">
+          {/* Mobile hamburger */}
           <button
             onClick={() => setSidebarOpen(true)}
-            className="p-1 rounded hover:bg-slate-700 transition-colors"
+            className="md:hidden p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
             aria-label="Apri menu"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <span className="font-bold tracking-tight">DocuFiscal</span>
+
+          {/* Desktop toggle */}
+          <button
+            onClick={() => setDesktopSidebarOpen(!desktopSidebarOpen)}
+            className="hidden md:flex p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+            aria-label={desktopSidebarOpen ? "Chiudi menu" : "Apri menu"}
+          >
+            <svg className={`w-6 h-6 transition-transform duration-300 ${!desktopSidebarOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <span className="font-bold text-slate-800 tracking-tight">DocuFiscal</span>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto relative">
           <Outlet />
         </main>
       </div>
+
+      {/* Global PDF Drawer */}
+      <PdfDrawer
+        documento={viewingDocument}
+        clienti={clienti}
+        contratti={contratti}
+        onClose={() => setViewingDocument(null)}
+        onSuccess={(updated) => {
+          // If we are on the DocumentiPage, it might need to know about the update.
+          // Since it's global, we could use an event emitter or just rely on the fact that
+          // the user will usually refresh or we could put the refresh logic in context.
+          // For now, let's keep it simple.
+          setViewingDocument(updated);
+        }}
+      />
+
+      {/* RAG Chatbot */}
+      <DocumentChatbot />
     </div>
   );
 };

@@ -9,6 +9,7 @@ class ClienteBase(BaseModel):
     """Base schema for Cliente with common fields."""
     nome: str
     cognome: Optional[str] = None
+    short_id: Optional[int] = None
     codice_fiscale: Optional[str] = None
     partita_iva: Optional[str] = None
     tipo: str = "persona_fisica"
@@ -25,6 +26,7 @@ class ClienteUpdate(BaseModel):
     """Schema for cliente update request with all optional fields."""
     nome: Optional[str] = None
     cognome: Optional[str] = None
+    short_id: Optional[int] = None
     codice_fiscale: Optional[str] = None
     partita_iva: Optional[str] = None
     tipo: Optional[str] = None

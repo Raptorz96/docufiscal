@@ -1,5 +1,6 @@
 interface Cliente {
   id: number;
+  short_id: number | null;
   nome: string;
   cognome: string | null;
   codice_fiscale: string | null;
@@ -13,6 +14,7 @@ interface Cliente {
 
 interface ClienteCreate {
   nome: string;
+  short_id?: number;
   cognome?: string;
   codice_fiscale?: string;
   partita_iva?: string;

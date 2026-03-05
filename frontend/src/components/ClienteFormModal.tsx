@@ -14,6 +14,7 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
   const [formData, setFormData] = useState({
     nome: '',
     cognome: '',
+    short_id: '',
     codice_fiscale: '',
     partita_iva: '',
     tipo: 'persona_fisica' as 'persona_fisica' | 'azienda',
@@ -31,6 +32,7 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
         setFormData({
           nome: cliente.nome,
           cognome: cliente.cognome || '',
+          short_id: cliente.short_id?.toString() || '',
           codice_fiscale: cliente.codice_fiscale || '',
           partita_iva: cliente.partita_iva || '',
           tipo: cliente.tipo,
@@ -41,6 +43,7 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
         setFormData({
           nome: '',
           cognome: '',
+          short_id: '',
           codice_fiscale: '',
           partita_iva: '',
           tipo: 'persona_fisica',
@@ -72,6 +75,7 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
       const dataToSubmit: ClienteCreate | ClienteUpdate = {
         nome: formData.nome.trim(),
         cognome: formData.cognome.trim() || undefined,
+        short_id: formData.short_id ? parseInt(formData.short_id, 10) : undefined,
         codice_fiscale: formData.codice_fiscale.trim() || "",
         partita_iva: formData.partita_iva.trim() || "",
         tipo: formData.tipo,
@@ -143,29 +147,45 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
             </div>
           )}
 
-          <div>
-            <label htmlFor="nome" className="block text-sm font-medium text-gray-700 mb-1">
-              Nome *
-            </label>
-            <input
-              type="text"
-              id="nome"
-              value={formData.nome}
-              onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              required
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="nome" className="block text-sm font-medium text-gray-700 mb-1">
+                Nome *
+              </label>
+              <input
+                type="text"
+                id="nome"
+                value={formData.nome}
+                onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="cognome" className="block text-sm font-medium text-gray-700 mb-1">
+                Cognome
+              </label>
+              <input
+                type="text"
+                id="cognome"
+                value={formData.cognome}
+                onChange={(e) => setFormData({ ...formData, cognome: e.target.value })}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+            </div>
           </div>
 
           <div>
-            <label htmlFor="cognome" className="block text-sm font-medium text-gray-700 mb-1">
-              Cognome
+            <label htmlFor="short_id" className="block text-sm font-medium text-gray-700 mb-1">
+              Short ID (es. #105)
             </label>
             <input
-              type="text"
-              id="cognome"
-              value={formData.cognome}
-              onChange={(e) => setFormData({ ...formData, cognome: e.target.value })}
+              type="number"
+              id="short_id"
+              value={formData.short_id}
+              onChange={(e) => setFormData({ ...formData, short_id: e.target.value })}
+              placeholder="Inserisci numero"
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>

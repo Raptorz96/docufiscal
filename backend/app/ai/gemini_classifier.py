@@ -15,15 +15,17 @@ logger = logging.getLogger(__name__)
 _RESPONSE_SCHEMA = {
     "type": "object",
     "properties": {
+        "macro_categoria": {"type": "string"},
         "tipo_documento": {"type": "string"},
         "tipo_documento_raw": {"type": "string"},
+        "anno_competenza": {"type": ["integer", "null"]},
         "confidence": {"type": "number"},
-        "cliente_suggerito": {"type": "string"},
-        "codice_fiscale": {"type": "string"},
-        "partita_iva": {"type": "string"},
-        "contratto_suggerito": {"type": "string"},
+        "cliente_suggerito": {"type": ["string", "null"]},
+        "codice_fiscale": {"type": ["string", "null"]},
+        "partita_iva": {"type": ["string", "null"]},
+        "contratto_suggerito": {"type": ["string", "null"]},
     },
-    "required": ["tipo_documento", "tipo_documento_raw", "confidence"],
+    "required": ["macro_categoria", "tipo_documento", "tipo_documento_raw", "confidence"],
 }
 
 
@@ -42,35 +44,10 @@ class GeminiClassifier(BaseClassifier):
         self.model = settings.AI_MODEL
         logger.info("GeminiClassifier initialised with model: %s", self.model)
 
-    def classify(
-        self,
-        text: str,
-        available_types: list[str],
-        clienti_context: list[dict] | None = None,
-    ) -> ClassificationResult:
-        """Classify a document using Gemini structured JSON output.
-
-        Args:
-            text: Extracted document text.
-            available_types: Valid TipoDocumento enum values.
-            clienti_context: Optional list of client dicts for entity matching.
-
-        Returns:
-            :class:`ClassificationResult` — falls back to default on any error.
-        """
+    def _process_response(self, response_text: str, available_types: list[str]) -> ClassificationResult:
+        """Shared logic to process Gemini response."""
         try:
-            prompt = build_classification_prompt(text, available_types, clienti_context)
-
-            response = self.client.models.generate_content(
-                model=self.model,
-                contents=prompt,
-                config={
-                    "response_mime_type": "application/json",
-                    "response_schema": _RESPONSE_SCHEMA,
-                },
-            )
-
-            data: dict = json.loads(response.text)
+            data: dict = json.loads(response_text)
 
             tipo = data.get("tipo_documento", "altro")
             if tipo not in available_types:
@@ -83,8 +60,10 @@ class GeminiClassifier(BaseClassifier):
             confidence = max(0.0, min(1.0, confidence))
 
             return ClassificationResult(
+                macro_categoria=data.get("macro_categoria", "altro"),
                 tipo_documento=tipo,
                 tipo_documento_raw=data.get("tipo_documento_raw", ""),
+                anno_competenza=data.get("anno_competenza"),
                 confidence=confidence,
                 cliente_suggerito=data.get("cliente_suggerito") or None,
                 codice_fiscale=data.get("codice_fiscale") or None,
@@ -92,7 +71,58 @@ class GeminiClassifier(BaseClassifier):
                 contratto_suggerito=data.get("contratto_suggerito") or None,
                 raw_response=data,
             )
+        except Exception:
+            logger.exception("Error processing Gemini response")
+            return _DEFAULT_RESULT
+
+    def classify(
+        self,
+        text: str,
+        available_types: list[str],
+        clienti_context: list[dict] | None = None,
+        skip_client_id: bool = False,
+    ) -> ClassificationResult:
+        """Classify a document using Gemini structured JSON output."""
+        try:
+            prompt = build_classification_prompt(text, available_types, clienti_context, skip_client_id=skip_client_id)
+
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config={
+                    "response_mime_type": "application/json",
+                    "response_schema": _RESPONSE_SCHEMA,
+                },
+            )
+
+            return self._process_response(response.text, available_types)
 
         except Exception:
             logger.exception("Gemini classification failed")
+            return _DEFAULT_RESULT
+
+    async def aclassify(
+        self,
+        text: str,
+        available_types: list[str],
+        clienti_context: list[dict] | None = None,
+        skip_client_id: bool = False,
+    ) -> ClassificationResult:
+        """Asynchronous document classification."""
+        try:
+            prompt = build_classification_prompt(text, available_types, clienti_context, skip_client_id=skip_client_id)
+
+            response = await self.client.aio.models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config={
+                    "response_mime_type": "application/json",
+                    "response_schema": _RESPONSE_SCHEMA,
+                },
+            )
+
+            return self._process_response(response.text, available_types)
+
+        except Exception:
+            logger.exception("Gemini async classification failed")
             return _DEFAULT_RESULT

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getDashboardStats, type DashboardStats } from '@/services/dashboardService';
+import { getDashboardStats, getUpcomingDeadlines } from '@/services/dashboardService';
+import type { DashboardStats, ContrattoScadenza } from '@/types/dashboard';
 
 // Inline SVG components to replace lucide-react dependency
 const UsersIcon = () => (
@@ -19,22 +20,31 @@ const ArrowRightIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
 );
 
+const CalendarIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></svg>
+);
+
 const DashboardPage: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [deadlines, setDeadlines] = useState<ContrattoScadenza[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getDashboardStats();
-        setStats(data);
+        const [statsData, deadlinesData] = await Promise.all([
+          getDashboardStats(),
+          getUpcomingDeadlines()
+        ]);
+        setStats(statsData);
+        setDeadlines(deadlinesData);
       } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
+        console.error('Error fetching dashboard data:', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchStats();
+    fetchData();
   }, []);
 
   if (loading) {
@@ -109,6 +119,78 @@ const DashboardPage: React.FC = () => {
             </Link>
           </div>
         ))}
+      </div>
+
+      {/* Sezione Scadenze Imminenti */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+              <CalendarIcon className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Scadenze Imminenti (30 giorni)</h2>
+          </div>
+          <span className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-semibold">
+            {deadlines.length} contratti
+          </span>
+        </div>
+
+        {deadlines.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50/50 text-gray-400 text-[10px] uppercase font-bold tracking-widest">
+                  <th className="px-6 py-4">Cliente</th>
+                  <th className="px-6 py-4">Tipo Contratto</th>
+                  <th className="px-6 py-4">Scadenza</th>
+                  <th className="px-6 py-4">Stato</th>
+                  <th className="px-6 py-4 text-right">Azioni</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {deadlines.map((scadenza) => (
+                  <tr key={scadenza.id} className="hover:bg-indigo-50/30 transition-colors group/row">
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-bold text-gray-900">{scadenza.cliente_nome}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-600">{scadenza.tipo_contratto_nome}</div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 font-medium">
+                      {new Date(scadenza.data_scadenza).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${scadenza.giorni_rimanenti < 7
+                          ? 'bg-red-100 text-red-700 ring-1 ring-red-200'
+                          : 'bg-yellow-100 text-yellow-700 ring-1 ring-yellow-200'
+                        }`}>
+                        {scadenza.giorni_rimanenti <= 0
+                          ? 'Scaduto'
+                          : `Tra ${scadenza.giorni_rimanenti} giorni`}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <Link
+                        to={`/documenti?cliente_id=${scadenza.cliente_id}`}
+                        className="text-indigo-600 hover:text-indigo-800 text-sm font-bold inline-flex items-center group-hover/row:translate-x-1 transition-transform"
+                      >
+                        Vedi Documenti
+                        <ArrowRightIcon className="w-4 h-4 ml-1" />
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="p-12 text-center">
+            <div className="inline-flex items-center justify-center p-4 bg-gray-50 rounded-full mb-4">
+              <CalendarIcon className="w-8 h-8 text-gray-300" />
+            </div>
+            <p className="text-gray-500 font-medium">Nessuna scadenza imminente nei prossimi 30 giorni.</p>
+          </div>
+        )}
       </div>
 
       <div className="bg-indigo-600 rounded-3xl p-8 text-white relative overflow-hidden shadow-2xl">

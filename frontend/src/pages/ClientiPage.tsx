@@ -183,6 +183,9 @@ export function ClientiPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      ID Breve
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Nome completo
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -205,6 +208,9 @@ export function ClientiPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {clienti.map((cliente) => (
                     <tr key={cliente.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                        {cliente.short_id ? `#${cliente.short_id}` : '-'}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {cliente.nome} {cliente.cognome || ''}
                       </td>

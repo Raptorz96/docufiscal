@@ -25,6 +25,14 @@ class TipoDocumento(str, Enum):
     altro = "altro"
 
 
+class MacroCategoria(str, Enum):
+    """Enum for document macro categories."""
+    fiscale = "fiscale"
+    lavoro = "lavoro"
+    amministrazione = "amministrazione"
+    altro = "altro"
+
+
 class Documento(Base):
     """
     Documento model representing uploaded documents in the system.
@@ -33,8 +41,10 @@ class Documento(Base):
         id: Primary key identifier
         cliente_id: Foreign key to the client (required)
         contratto_id: Foreign key to the contract (optional)
+        macro_categoria: Macro category (Fiscale, Lavoro, Amministrazione)
         tipo_documento: Document type from TipoDocumento enum
         tipo_documento_raw: Free-text document type from AI classification
+        anno_competenza: Reference year for the document
         file_name: Original uploaded filename
         file_path: Path on filesystem
         file_size: File size in bytes
@@ -71,6 +81,13 @@ class Documento(Base):
         doc="Foreign key to the contract (optional)"
     )
 
+    macro_categoria: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        server_default="altro",
+        doc="Macro category (Fiscale, Lavoro, Amministrazione)"
+    )
+
     tipo_documento: Mapped[str] = mapped_column(
         String(50),
         nullable=False,
@@ -82,6 +99,12 @@ class Documento(Base):
         String(255),
         nullable=True,
         doc="Free-text document type from AI classification"
+    )
+
+    anno_competenza: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True,
+        doc="Reference year for the document"
     )
 
     file_name: Mapped[str] = mapped_column(
@@ -163,4 +186,4 @@ class Documento(Base):
 
     def __repr__(self) -> str:
         """String representation of Documento instance."""
-        return f"<Documento(id={self.id}, cliente_id={self.cliente_id}, tipo='{self.tipo_documento}', file='{self.file_name}')>"
+        return f"<Documento(id={self.id}, cliente_id={self.cliente_id}, macro='{self.macro_categoria}', tipo='{self.tipo_documento}', anno={self.anno_competenza})>"

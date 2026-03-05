@@ -7,28 +7,31 @@ import DashboardPage from './pages/DashboardPage';
 import { ClientiPage } from './pages/ClientiPage';
 import { ContrattiPage } from './pages/ContrattiPage';
 import { DocumentiPage } from './pages/DocumentiPage';
+import { DocumentProvider } from './context/DocumentContext';
 import './App.css';
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route
-            element={
-              <ProtectedRoute>
-                <AppLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/clienti" element={<ClientiPage />} />
-            <Route path="/contratti" element={<ContrattiPage />} />
-            <Route path="/documenti" element={<DocumentiPage />} />
-          </Route>
-        </Routes>
-      </Router>
+      <DocumentProvider>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              element={
+                <ProtectedRoute>
+                  <AppLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="/clienti" element={<ClientiPage />} />
+              <Route path="/contratti" element={<ContrattiPage />} />
+              <Route path="/documenti" element={<DocumentiPage />} />
+            </Route>
+          </Routes>
+        </Router>
+      </DocumentProvider>
     </AuthProvider>
   );
 }
