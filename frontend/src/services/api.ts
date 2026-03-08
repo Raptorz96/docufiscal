@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/v1',
+  baseURL: 'https://acetometrically-flexuous-temple.ngrok-free.dev/api/v1',
 });
 
 api.interceptors.request.use(
@@ -10,6 +10,7 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    config.headers['ngrok-skip-browser-warning'] = 'true';
     return config;
   },
   (error) => {

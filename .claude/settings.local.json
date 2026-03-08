@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(git commit -m \"$(cat <<''EOF''\nfeat: add TipoContratto schemas and CRUD API endpoints\n\n🤖 Generated with [Claude Code](https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: add Contratto schemas and CRUD API endpoints\n\n🤖 Generated with [Claude Code](https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: add Contratto schemas and CRUD API endpoints\n\n🤖 Generated with [Claude Code](https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(cat /mnt/c/Users/marco/OneDrive/Desktop/DocuFiscal/backend/requirements.txt 2>/dev/null || cat /mnt/c/Users/marco/OneDrive/Desktop/DocuFiscal/backend/requirements*.txt 2>/dev/null)"
     ],
     "deny": [],
     "ask": []
