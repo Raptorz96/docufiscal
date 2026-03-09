@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git commit -m \"$(cat <<''EOF''\nfeat: add TipoContratto schemas and CRUD API endpoints\n\n🤖 Generated with [Claude Code](https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git commit -m \"$(cat <<''EOF''\nfeat: add Contratto schemas and CRUD API endpoints\n\n🤖 Generated with [Claude Code](https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(cat /mnt/c/Users/marco/OneDrive/Desktop/DocuFiscal/backend/requirements.txt 2>/dev/null || cat /mnt/c/Users/marco/OneDrive/Desktop/DocuFiscal/backend/requirements*.txt 2>/dev/null)"
+      "Bash(cat /mnt/c/Users/marco/OneDrive/Desktop/DocuFiscal/backend/requirements.txt 2>/dev/null || cat /mnt/c/Users/marco/OneDrive/Desktop/DocuFiscal/backend/requirements*.txt 2>/dev/null)",
+      "Bash(git add backend/verify_scadenze.py && git commit -m \"chore: remove debug script verify_scadenze.py\")"
     ],
     "deny": [],
     "ask": []
