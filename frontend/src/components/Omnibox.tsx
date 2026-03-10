@@ -37,10 +37,12 @@ export function Omnibox({ clienti, onSelectDocument }: OmniboxProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [isFocused, setIsFocused] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // "/" shortcut: focus input if no other input has focus
   useEffect(() => {
@@ -52,6 +54,14 @@ export function Omnibox({ clienti, onSelectDocument }: OmniboxProps) {
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Cleanup debounce + abort on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      abortRef.current?.abort();
+    };
   }, []);
 
   // Click outside → close dropdown
@@ -72,17 +82,24 @@ export function Omnibox({ clienti, onSelectDocument }: OmniboxProps) {
       setIsOpen(false);
       return;
     }
+
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+
     setIsLoading(true);
     try {
       const res = await api.get<SemanticSearchResult[]>('/search/semantic', {
         params: { q, limit: 5 },
+        signal: abortRef.current.signal,
       });
       setResults(res.data);
       setIsOpen(true);
       setActiveIndex(-1);
     } catch (err) {
-      console.error('[Omnibox] search error:', err);
-      setResults([]);
+      if (err instanceof Error && err.name !== 'AbortError' && err.name !== 'CanceledError') {
+        console.error('[Omnibox] search error:', err);
+        setResults([]);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -144,7 +161,7 @@ export function Omnibox({ clienti, onSelectDocument }: OmniboxProps) {
       {/* Input */}
       <div className={`
         flex items-center gap-2 px-3 py-2 rounded-lg border bg-white transition-all duration-150
-        ${isOpen || document.activeElement === inputRef.current
+        ${isOpen || isFocused
           ? 'border-slate-400 ring-2 ring-slate-800/8 shadow-sm'
           : 'border-gray-200 hover:border-gray-300'
         }
@@ -161,7 +178,8 @@ export function Omnibox({ clienti, onSelectDocument }: OmniboxProps) {
           value={query}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          onFocus={() => { if (results.length > 0) setIsOpen(true); }}
+          onFocus={() => { setIsFocused(true); if (results.length > 0) setIsOpen(true); }}
+          onBlur={() => setIsFocused(false)}
           placeholder="Cerca documenti… ( / )"
           className="flex-1 text-sm text-slate-700 placeholder-gray-400 bg-transparent outline-none min-w-0"
           autoComplete="off"
