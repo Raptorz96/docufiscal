@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 from fastapi import APIRouter, Depends
-from sqlalchemy import or_
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.cliente import Cliente
@@ -38,7 +38,11 @@ def get_dashboard_stats(
 
     contratti_scaduti = (
         db.query(Contratto)
-        .filter(Contratto.data_fine.isnot(None), Contratto.data_fine < today)
+        .filter(
+            Contratto.stato == "attivo",
+            Contratto.data_fine.isnot(None),
+            Contratto.data_fine < today,
+        )
         .count()
     )
 
@@ -67,9 +71,11 @@ def get_dashboard_stats(
             Contratto.data_fine.isnot(None),
             or_(
                 Contratto.data_fine < today,
-                (Contratto.stato == "attivo")
-                & (Contratto.data_fine >= today)
-                & (Contratto.data_fine <= thirty_days_later),
+                and_(
+                    Contratto.stato == "attivo",
+                    Contratto.data_fine >= today,
+                    Contratto.data_fine <= thirty_days_later,
+                ),
             ),
         )
         .order_by(Contratto.data_fine.asc())
