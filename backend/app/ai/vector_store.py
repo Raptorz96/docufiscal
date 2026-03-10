@@ -85,11 +85,11 @@ class VectorStore:
             metadata = {
                 "document_id": document_id,
             }
-            if file_name:
+            if file_name is not None:
                 metadata["file_name"] = file_name
             if cliente_id is not None:
                 metadata["cliente_id"] = cliente_id
-            if macro_categoria:
+            if macro_categoria is not None:
                 metadata["macro_categoria"] = macro_categoria
             if anno_competenza is not None:
                 metadata["anno_competenza"] = anno_competenza
@@ -124,11 +124,11 @@ class VectorStore:
             return False
         try:
             metadata: Dict[str, Any] = {"document_id": document_id}
-            if file_name:
+            if file_name is not None:
                 metadata["file_name"] = file_name
             if cliente_id is not None:
                 metadata["cliente_id"] = cliente_id
-            if macro_categoria:
+            if macro_categoria is not None:
                 metadata["macro_categoria"] = macro_categoria
             if anno_competenza is not None:
                 metadata["anno_competenza"] = anno_competenza
