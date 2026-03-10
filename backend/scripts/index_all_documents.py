@@ -1,3 +1,4 @@
+import asyncio
 import os
 import sys
 
@@ -7,10 +8,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.core.database import SessionLocal
 from app.models.documento import Documento
 from app.ai.text_extraction import text_extraction_service
-from app.ai.embeddings import index_document
+from app.ai.vector_store import vector_store
 from app.storage import storage_service
 
-def main():
+
+async def main():
     db = SessionLocal()
     try:
         documenti = db.query(Documento).all()
@@ -21,20 +23,22 @@ def main():
             try:
                 abs_path = storage_service.get_file_path(doc.file_path)
                 extracted_text = text_extraction_service.extract_text(abs_path, doc.mime_type)
-                
+
                 if extracted_text.strip():
-                    meta = {
-                        "file_name": doc.file_name,
-                        "tipo_documento": doc.tipo_documento,
-                        "macro_categoria": doc.macro_categoria
-                    }
-                    success = index_document(doc.id, extracted_text, metadata=meta)
+                    success = await vector_store.add_document(
+                        text=extracted_text,
+                        document_id=doc.id,
+                        file_name=doc.file_name,
+                        cliente_id=doc.cliente_id,
+                        macro_categoria=doc.macro_categoria,
+                        anno_competenza=doc.anno_competenza,
+                    )
                     if success:
                         print(f"  -> Successfully indexed document {doc.id}")
                     else:
-                        print(f"  -> Failed to index document {doc.id} (embedding returned False)")
+                        print(f"  -> Failed to index document {doc.id}")
                 else:
-                    print(f"  -> No text extracted for document {doc.id}, skipping index.")
+                    print(f"  -> No text extracted for document {doc.id}, skipping.")
             except Exception as e:
                 print(f"  -> Error processing document {doc.id}: {e}")
 
@@ -42,5 +46,6 @@ def main():
     finally:
         db.close()
 
+
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

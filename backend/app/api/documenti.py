@@ -520,7 +520,7 @@ def classifica_documento(
 
 
 @router.delete("/{documento_id}", status_code=status.HTTP_200_OK)
-def delete_documento(
+async def delete_documento(
     documento_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -555,8 +555,8 @@ def delete_documento(
     storage_service.delete_file(file_path)
 
     # --- Delete from ChromaDB ---
-    from app.ai.embeddings import delete_document_embedding
-    delete_document_embedding(documento_id)
+    from app.ai.vector_store import vector_store
+    await vector_store.delete_document(documento_id)
 
     return {"detail": "Documento eliminato"}
 

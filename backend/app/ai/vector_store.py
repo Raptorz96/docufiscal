@@ -94,9 +94,9 @@ class VectorStore:
             if anno_competenza is not None:
                 metadata["anno_competenza"] = anno_competenza
 
-            # Index document
+            # Upsert document (safe for re-indexing)
             await anyio.to_thread.run_sync(
-                lambda: self.collection.add(
+                lambda: self.collection.upsert(
                     documents=[text],
                     embeddings=[embedding.tolist()],
                     metadatas=[metadata],
@@ -108,6 +108,21 @@ class VectorStore:
             return True
         except Exception as e:
             logger.error(f"Failed to add document {document_id} to VectorStore: {e}")
+            return False
+
+    async def delete_document(self, document_id: int) -> bool:
+        """Remove a document from the vector store by ID."""
+        if not self._initialized or self.collection is None:
+            logger.error("VectorStore not initialized.")
+            return False
+        try:
+            await anyio.to_thread.run_sync(
+                lambda: self.collection.delete(ids=[str(document_id)])
+            )
+            logger.info(f"Deleted document {document_id} from VectorStore")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to delete document {document_id} from VectorStore: {e}")
             return False
 
     async def search_documents(
