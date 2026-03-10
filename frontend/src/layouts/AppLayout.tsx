@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useDocument } from '../context/DocumentContext';
 import { PdfDrawer } from '../components/PdfDrawer';
 import { DocumentChatbot } from '../components/DocumentChatbot';
+import { Omnibox } from '../components/Omnibox';
 
 interface NavItem {
   label: string;
@@ -181,6 +182,14 @@ const AppLayout: FC = () => {
           </button>
 
           <span className="font-bold text-slate-800 tracking-tight">DocuFiscal</span>
+
+          {/* Omnibox — global semantic search */}
+          <div className="flex-1 flex justify-center">
+            <Omnibox
+              clienti={clienti}
+              onSelectDocument={(doc) => setViewingDocument(doc)}
+            />
+          </div>
         </header>
 
         {/* Page content */}
