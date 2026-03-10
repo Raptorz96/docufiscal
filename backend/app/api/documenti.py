@@ -350,7 +350,7 @@ def get_documento(
 
 
 @router.patch("/{documento_id}", response_model=DocumentoOut)
-def update_documento(
+async def update_documento(
     documento_id: int,
     update_data: DocumentoUpdate,
     db: Session = Depends(get_db),
@@ -429,11 +429,25 @@ def update_documento(
 
     db.commit()
     db.refresh(documento)
+
+    # --- Sync VectorStore metadata ---
+    try:
+        from app.ai.vector_store import vector_store
+        await vector_store.update_metadata(
+            document_id=documento.id,
+            file_name=documento.file_name,
+            cliente_id=documento.cliente_id,
+            macro_categoria=documento.macro_categoria,
+            anno_competenza=documento.anno_competenza,
+        )
+    except Exception as e:
+        logger.error("Failed to sync VectorStore after update_documento %d: %s", documento.id, e)
+
     return DocumentoOut.model_validate(documento)
 
 
 @router.patch("/{documento_id}/classifica", response_model=DocumentoOut)
-def classifica_documento(
+async def classifica_documento(
     documento_id: int,
     body: ClassificazioneOverride,
     db: Session = Depends(get_db),
@@ -515,6 +529,19 @@ def classifica_documento(
         documento.tipo_documento,
         current_user.email,
     )
+
+    # --- Sync VectorStore metadata ---
+    try:
+        from app.ai.vector_store import vector_store
+        await vector_store.update_metadata(
+            document_id=documento.id,
+            file_name=documento.file_name,
+            cliente_id=documento.cliente_id,
+            macro_categoria=documento.macro_categoria,
+            anno_competenza=documento.anno_competenza,
+        )
+    except Exception as e:
+        logger.error("Failed to sync VectorStore after classifica_documento %d: %s", documento.id, e)
 
     return DocumentoOut.model_validate(documento)
 

@@ -110,6 +110,41 @@ class VectorStore:
             logger.error(f"Failed to add document {document_id} to VectorStore: {e}")
             return False
 
+    async def update_metadata(
+        self,
+        document_id: int,
+        file_name: Optional[str] = None,
+        cliente_id: Optional[int] = None,
+        macro_categoria: Optional[str] = None,
+        anno_competenza: Optional[int] = None,
+    ) -> bool:
+        """Update only metadata for an existing document (no re-embedding)."""
+        if not self._initialized or self.collection is None:
+            logger.error("VectorStore not initialized.")
+            return False
+        try:
+            metadata: Dict[str, Any] = {"document_id": document_id}
+            if file_name:
+                metadata["file_name"] = file_name
+            if cliente_id is not None:
+                metadata["cliente_id"] = cliente_id
+            if macro_categoria:
+                metadata["macro_categoria"] = macro_categoria
+            if anno_competenza is not None:
+                metadata["anno_competenza"] = anno_competenza
+
+            await anyio.to_thread.run_sync(
+                lambda: self.collection.update(
+                    ids=[str(document_id)],
+                    metadatas=[metadata],
+                )
+            )
+            logger.info(f"Updated metadata for document {document_id} in VectorStore")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to update metadata for document {document_id}: {e}")
+            return False
+
     async def delete_document(self, document_id: int) -> bool:
         """Remove a document from the vector store by ID."""
         if not self._initialized or self.collection is None:
