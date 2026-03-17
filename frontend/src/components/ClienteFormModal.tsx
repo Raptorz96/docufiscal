@@ -86,7 +86,7 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
       if (isEditMode && cliente) {
         await updateCliente(cliente.id, dataToSubmit);
       } else {
-        await createCliente(dataToSubmit);
+        await createCliente(dataToSubmit as ClienteCreate);
       }
 
       onSuccess();

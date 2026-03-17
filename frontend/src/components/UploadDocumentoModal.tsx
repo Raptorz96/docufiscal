@@ -5,7 +5,7 @@ import { getClienti } from '@/services/clientiService';
 import { getContratti } from '@/services/contrattiService';
 import { TIPO_LABELS } from '@/utils/documentoLabels';
 import { formatFileSize } from '@/utils/formatters';
-import type { TipoDocumento } from '@/types/documento';
+import type { TipoDocumento, Documento } from '@/types/documento';
 import type { Cliente } from '@/types/cliente';
 import type { Contratto } from '@/types/contratto';
 

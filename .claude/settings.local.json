@@ -42,7 +42,8 @@
       "Bash(/tmp/docufiscal-test-env/bin/python -c \"from sentence_transformers import SentenceTransformer; print\\('ok'\\)\" 2>&1 | head -5)",
       "Bash(PYTHONPATH=/mnt/c/Users/marco/OneDrive/Desktop/DocuFiscal/backend /tmp/docufiscal-test-env/bin/python -c \"from app.main import app; print\\('import ok'\\)\" 2>&1)",
       "Bash(cat:*)",
-      "Bash(PYTHONPATH=/mnt/c/Users/marco/OneDrive/Desktop/DocuFiscal/backend:/tmp/docufiscal-test-env/lib/python3.12/site-packages python3.12 -c \"from app.main import app; print\\('import ok'\\)\" 2>&1)"
+      "Bash(PYTHONPATH=/mnt/c/Users/marco/OneDrive/Desktop/DocuFiscal/backend:/tmp/docufiscal-test-env/lib/python3.12/site-packages python3.12 -c \"from app.main import app; print\\('import ok'\\)\" 2>&1)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

@@ -78,7 +78,7 @@ export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto, clie
       if (isEditMode && contratto) {
         await updateContratto(contratto.id, dataToSubmit);
       } else {
-        await createContratto(dataToSubmit);
+        await createContratto(dataToSubmit as ContrattoCreate);
       }
 
       onSuccess();
