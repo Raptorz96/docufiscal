@@ -44,7 +44,14 @@
       "Bash(cat:*)",
       "Bash(PYTHONPATH=/mnt/c/Users/marco/OneDrive/Desktop/DocuFiscal/backend:/tmp/docufiscal-test-env/lib/python3.12/site-packages python3.12 -c \"from app.main import app; print\\('import ok'\\)\" 2>&1)",
       "Bash(npx tsc:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Skill(update-config)",
+      "Bash(gh --version)",
+      "Bash(git credential-manager:*)",
+      "Bash(sudo dpkg:*)",
+      "Bash(sudo tee:*)",
+      "Bash(sudo apt:*)",
+      "Bash(git:*)"
     ],
     "deny": [],
     "ask": []
