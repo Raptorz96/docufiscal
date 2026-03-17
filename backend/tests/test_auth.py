@@ -1,0 +1,136 @@
+"""Tests for authentication endpoints: register, login, me."""
+from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
+
+from app.main import app
+from app.core.database import get_db
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _raw_client(db: Session) -> TestClient:
+    """TestClient with only get_db overridden — no auth bypass."""
+    def _override_get_db():
+        yield db
+    app.dependency_overrides[get_db] = _override_get_db
+    return TestClient(app, raise_server_exceptions=False)
+
+
+# ---------------------------------------------------------------------------
+# Register
+# ---------------------------------------------------------------------------
+
+class TestRegister:
+
+    def test_register_success(self, db: Session) -> None:
+        tc = _raw_client(db)
+        try:
+            resp = tc.post("/api/v1/auth/register", json={
+                "email": "nuovo@docufiscal.it",
+                "password": "password123",
+                "nome": "Luca",
+                "cognome": "Verdi",
+            })
+            assert resp.status_code == 201
+            data = resp.json()
+            assert data["email"] == "nuovo@docufiscal.it"
+            assert data["nome"] == "Luca"
+            assert data["cognome"] == "Verdi"
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_register_duplicate_email(self, db: Session) -> None:
+        tc = _raw_client(db)
+        try:
+            payload = {
+                "email": "dup@docufiscal.it",
+                "password": "password123",
+                "nome": "A",
+                "cognome": "B",
+            }
+            tc.post("/api/v1/auth/register", json=payload)
+            resp = tc.post("/api/v1/auth/register", json=payload)
+            assert resp.status_code == 409
+        finally:
+            app.dependency_overrides.clear()
+
+
+# ---------------------------------------------------------------------------
+# Login
+# ---------------------------------------------------------------------------
+
+class TestLogin:
+
+    def test_login_success(self, db: Session) -> None:
+        tc = _raw_client(db)
+        try:
+            # Register a user with a real password hash first
+            tc.post("/api/v1/auth/register", json={
+                "email": "login_ok@docufiscal.it",
+                "password": "mypassword",
+                "nome": "Test",
+                "cognome": "User",
+            })
+            resp = tc.post("/api/v1/auth/login", data={
+                "username": "login_ok@docufiscal.it",
+                "password": "mypassword",
+            })
+            assert resp.status_code == 200
+            data = resp.json()
+            assert "access_token" in data
+            assert data["token_type"] == "bearer"
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_login_wrong_password(self, db: Session) -> None:
+        tc = _raw_client(db)
+        try:
+            tc.post("/api/v1/auth/register", json={
+                "email": "login_bad@docufiscal.it",
+                "password": "correct_password",
+                "nome": "Test",
+                "cognome": "User",
+            })
+            resp = tc.post("/api/v1/auth/login", data={
+                "username": "login_bad@docufiscal.it",
+                "password": "wrong_password",
+            })
+            assert resp.status_code == 401
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_login_nonexistent_email(self, db: Session) -> None:
+        tc = _raw_client(db)
+        try:
+            resp = tc.post("/api/v1/auth/login", data={
+                "username": "nonexistent@docufiscal.it",
+                "password": "anypassword",
+            })
+            assert resp.status_code == 401
+        finally:
+            app.dependency_overrides.clear()
+
+
+# ---------------------------------------------------------------------------
+# Me
+# ---------------------------------------------------------------------------
+
+class TestMe:
+
+    def test_me_authenticated(self, client: TestClient) -> None:
+        resp = client.get("/api/v1/auth/me")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "email" in data
+        assert "nome" in data
+        assert "cognome" in data
+
+    def test_me_unauthenticated(self, db: Session) -> None:
+        tc = _raw_client(db)
+        try:
+            resp = tc.get("/api/v1/auth/me")
+            assert resp.status_code == 401
+        finally:
+            app.dependency_overrides.clear()
