@@ -32,7 +32,7 @@ def upgrade() -> None:
     sa.Column('mime_type', sa.String(length=100), nullable=False),
     sa.Column('classificazione_ai', sa.JSON(), nullable=True),
     sa.Column('confidence_score', sa.Float(), nullable=True),
-    sa.Column('verificato_da_utente', sa.Boolean(), server_default='false', nullable=False),
+    sa.Column('verificato_da_utente', sa.Boolean(), server_default=sa.text('false'), nullable=False),
     sa.Column('note', sa.Text(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
