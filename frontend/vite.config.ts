@@ -12,6 +12,9 @@ export default defineConfig({
   },
   server: {
     host: true,
-    allowedHosts: ['wavier-braelynn-pronavy.ngrok-free.dev'],
+    allowedHosts: ['wavier-braelynn-pronavy.ngrok-free.dev', 'itsm.maftei.it'],
+  },
+  preview: {
+    allowedHosts: ['itsm.maftei.it'],
   },
 })
