@@ -85,6 +85,17 @@ const LoginPage: React.FC = () => {
               {isLoading ? 'Caricamento...' : 'Accedi'}
             </button>
           </div>
+
+          <div className="text-center text-sm text-gray-600">
+            Non hai un account?{' '}
+            <button
+              type="button"
+              onClick={() => navigate('/register')}
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              Registrati
+            </button>
+          </div>
         </form>
       </div>
     </div>
