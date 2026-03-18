@@ -15,7 +15,7 @@ from app.schemas.contratto import ContrattoCreate, ContrattoUpdate, ContrattoRes
 router = APIRouter(prefix="/contratti", tags=["contratti"])
 
 
-@router.get("/", response_model=List[ContrattoResponse])
+@router.get("", response_model=List[ContrattoResponse])
 def list_contratti(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -85,7 +85,7 @@ def get_contratto(
     return ContrattoResponse.model_validate(contratto)
 
 
-@router.post("/", response_model=ContrattoResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ContrattoResponse, status_code=status.HTTP_201_CREATED)
 def create_contratto(
     contratto_data: ContrattoCreate,
     db: Session = Depends(get_db),

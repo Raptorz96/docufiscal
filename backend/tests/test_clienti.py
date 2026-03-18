@@ -17,7 +17,7 @@ def _unauthenticated_client(db: Session) -> TestClient:
 class TestClienti:
 
     def test_create_cliente(self, client: TestClient) -> None:
-        resp = client.post("/api/v1/clienti/", json={
+        resp = client.post("/api/v1/clienti", json={
             "nome": "Anna",
             "cognome": "Neri",
             "codice_fiscale": "NRANNA80B41H501X",
@@ -32,7 +32,7 @@ class TestClienti:
         assert data["tipo"] == "persona_fisica"
 
     def test_create_cliente_azienda(self, client: TestClient) -> None:
-        resp = client.post("/api/v1/clienti/", json={
+        resp = client.post("/api/v1/clienti", json={
             "nome": "Acme Srl",
             "tipo": "azienda",
             "partita_iva": "12345678901",
@@ -43,19 +43,19 @@ class TestClienti:
         assert data["partita_iva"] == "12345678901"
 
     def test_list_clienti(self, client: TestClient, fake_cliente: Cliente) -> None:
-        resp = client.get("/api/v1/clienti/")
+        resp = client.get("/api/v1/clienti")
         assert resp.status_code == 200
         assert len(resp.json()) >= 1
 
     def test_list_clienti_filter_tipo(self, client: TestClient, fake_cliente: Cliente) -> None:
-        resp = client.get("/api/v1/clienti/?tipo=persona_fisica")
+        resp = client.get("/api/v1/clienti?tipo=persona_fisica")
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) >= 1
         assert all(c["tipo"] == "persona_fisica" for c in data)
 
     def test_list_clienti_search(self, client: TestClient, fake_cliente: Cliente) -> None:
-        resp = client.get("/api/v1/clienti/?search=Bianchi")
+        resp = client.get("/api/v1/clienti?search=Bianchi")
         assert resp.status_code == 200
         data = resp.json()
         assert any("Bianchi" in (c.get("cognome") or "") for c in data)
@@ -66,7 +66,7 @@ class TestClienti:
         assert resp.json()["id"] == fake_cliente.id
 
     def test_get_cliente_not_found(self, client: TestClient) -> None:
-        resp = client.get("/api/v1/clienti/99999")
+        resp = client.get("/api/v1/clienti99999")
         assert resp.status_code == 404
 
     def test_update_cliente(self, client: TestClient, fake_cliente: Cliente) -> None:
@@ -87,13 +87,13 @@ class TestClienti:
         assert resp.status_code == 204
 
     def test_delete_cliente_not_found(self, client: TestClient) -> None:
-        resp = client.delete("/api/v1/clienti/99999")
+        resp = client.delete("/api/v1/clienti99999")
         assert resp.status_code == 404
 
     def test_list_clienti_unauthenticated(self, db: Session) -> None:
         tc = _unauthenticated_client(db)
         try:
-            resp = tc.get("/api/v1/clienti/")
+            resp = tc.get("/api/v1/clienti")
             assert resp.status_code == 401
         finally:
             app.dependency_overrides.clear()

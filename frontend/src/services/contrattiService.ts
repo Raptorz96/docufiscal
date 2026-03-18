@@ -8,7 +8,7 @@ interface GetContrattiParams {
 }
 
 export const getContratti = async (params?: GetContrattiParams): Promise<Contratto[]> => {
-  const response = await api.get('/contratti/', { params });
+  const response = await api.get('/contratti', { params });
   return response.data;
 };
 
@@ -18,7 +18,7 @@ export const getContratto = async (id: number): Promise<Contratto> => {
 };
 
 export const createContratto = async (data: ContrattoCreate): Promise<Contratto> => {
-  const response = await api.post('/contratti/', data);
+  const response = await api.post('/contratti', data);
   return response.data;
 };
 

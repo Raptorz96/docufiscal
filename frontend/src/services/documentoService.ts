@@ -12,7 +12,7 @@ interface GetDocumentiParams {
 }
 
 export const getDocumenti = async (params?: GetDocumentiParams): Promise<Documento[]> => {
-  const response = await api.get('/documenti/', { params });
+  const response = await api.get('/documenti', { params });
   return response.data;
 };
 

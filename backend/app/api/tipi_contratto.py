@@ -13,7 +13,7 @@ from app.schemas.tipo_contratto import TipoContrattoCreate, TipoContrattoUpdate,
 router = APIRouter(prefix="/tipi-contratto", tags=["tipi_contratto"])
 
 
-@router.get("/", response_model=List[TipoContrattoResponse])
+@router.get("", response_model=List[TipoContrattoResponse])
 def list_tipi_contratto(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -78,7 +78,7 @@ def get_tipo_contratto(
     return TipoContrattoResponse.model_validate(tipo_contratto)
 
 
-@router.post("/", response_model=TipoContrattoResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=TipoContrattoResponse, status_code=status.HTTP_201_CREATED)
 def create_tipo_contratto(
     tipo_contratto_data: TipoContrattoCreate,
     db: Session = Depends(get_db),

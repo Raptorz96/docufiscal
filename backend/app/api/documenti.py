@@ -263,7 +263,7 @@ async def upload_documento(
         )
 
 
-@router.get("/", response_model=list[DocumentoOut])
+@router.get("", response_model=list[DocumentoOut])
 def list_documenti(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

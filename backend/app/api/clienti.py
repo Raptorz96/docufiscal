@@ -14,7 +14,7 @@ from app.schemas.cliente import ClienteCreate, ClienteUpdate, ClienteResponse
 router = APIRouter(prefix="/clienti", tags=["clienti"])
 
 
-@router.get("/", response_model=List[ClienteResponse])
+@router.get("", response_model=List[ClienteResponse])
 def list_clienti(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -85,7 +85,7 @@ def get_cliente(
     return ClienteResponse.model_validate(cliente)
 
 
-@router.post("/", response_model=ClienteResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ClienteResponse, status_code=status.HTTP_201_CREATED)
 def create_cliente(
     cliente_data: ClienteCreate,
     db: Session = Depends(get_db),

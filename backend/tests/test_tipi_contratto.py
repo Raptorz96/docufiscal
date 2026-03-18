@@ -17,7 +17,7 @@ def _unauthenticated_client(db: Session) -> TestClient:
 class TestTipiContratto:
 
     def test_create_tipo_contratto(self, client: TestClient) -> None:
-        resp = client.post("/api/v1/tipi-contratto/", json={
+        resp = client.post("/api/v1/tipi-contratto", json={
             "nome": "Consulenza Fiscale",
             "categoria": "fiscale",
             "descrizione": "Consulenza in materia fiscale",
@@ -32,7 +32,7 @@ class TestTipiContratto:
         db.add(tc)
         db.commit()
 
-        resp = client.get("/api/v1/tipi-contratto/")
+        resp = client.get("/api/v1/tipi-contratto")
         assert resp.status_code == 200
         assert len(resp.json()) >= 1
 
@@ -41,7 +41,7 @@ class TestTipiContratto:
         db.add(tc)
         db.commit()
 
-        resp = client.get("/api/v1/tipi-contratto/?categoria=contabile")
+        resp = client.get("/api/v1/tipi-contratto?categoria=contabile")
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) >= 1
@@ -58,7 +58,7 @@ class TestTipiContratto:
         assert resp.json()["id"] == tc.id
 
     def test_get_tipo_contratto_not_found(self, client: TestClient) -> None:
-        resp = client.get("/api/v1/tipi-contratto/99999")
+        resp = client.get("/api/v1/tipi-contratto99999")
         assert resp.status_code == 404
 
     def test_update_tipo_contratto(self, client: TestClient, db: Session) -> None:
@@ -85,7 +85,7 @@ class TestTipiContratto:
     def test_list_tipi_contratto_unauthenticated(self, db: Session) -> None:
         tc = _unauthenticated_client(db)
         try:
-            resp = tc.get("/api/v1/tipi-contratto/")
+            resp = tc.get("/api/v1/tipi-contratto")
             assert resp.status_code == 401
         finally:
             app.dependency_overrides.clear()
