@@ -5,7 +5,8 @@ from app.api import auth_router, clienti_router, tipi_contratto_router, contratt
 
 app = FastAPI(
     title="DocuFiscal API",
-    version="0.1.0"
+    version="0.1.0",
+    redirect_slashes=False,
 )
 
 # CORS middleware configuration

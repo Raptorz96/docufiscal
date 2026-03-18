@@ -7,7 +7,7 @@ interface GetClientiParams {
 }
 
 export const getClienti = async (params?: GetClientiParams): Promise<Cliente[]> => {
-  const response = await api.get('/clienti', { params });
+  const response = await api.get('/clienti/', { params });
   return response.data;
 };
 
@@ -17,7 +17,7 @@ export const getCliente = async (id: number): Promise<Cliente> => {
 };
 
 export const createCliente = async (data: ClienteCreate): Promise<Cliente> => {
-  const response = await api.post('/clienti', data);
+  const response = await api.post('/clienti/', data);
   return response.data;
 };
 
