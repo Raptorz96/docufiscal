@@ -145,18 +145,17 @@ export function PdfDrawer({ documento, clienti, contratti, onClose, onSuccess }:
 
     return (
         <>
-            {/* ── Backdrop (subtle dimming, doesn't block table interaction) ── */}
+            {/* ── Backdrop (subtle dimming, desktop only) ── */}
             <div
-                className={`fixed inset-y-0 right-0 z-50 pointer-events-none transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'
+                className={`hidden md:block fixed inset-y-0 right-0 z-50 pointer-events-none transition-opacity duration-300 md:w-[45vw] ${isOpen ? 'opacity-100' : 'opacity-0'
                     }`}
-                style={{ width: '45vw', background: 'rgba(0,0,0,0.12)' }}
+                style={{ background: 'rgba(0,0,0,0.12)' }}
             />
 
             {/* ── Drawer panel ── */}
             <div
-                className={`fixed top-0 right-0 h-full z-[60] flex flex-col bg-white shadow-2xl border-l border-gray-200 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed top-0 right-0 h-full z-[60] flex flex-col bg-white shadow-2xl border-l border-gray-200 transition-transform duration-300 ease-in-out w-full md:w-[45vw] ${isOpen ? 'translate-x-0' : 'translate-x-full'
                     }`}
-                style={{ width: '45vw' }}
                 aria-hidden={!isOpen}
             >
                 {documento && (

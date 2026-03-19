@@ -341,8 +341,7 @@ export function DocumentiPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       {/* When the drawer is open, we use a flex layout: table on the left, drawer on the right (fixed). */}
       <div
-        className={`transition-all duration-300 px-4 sm:px-6 lg:px-8 w-full mx-auto`}
-        style={isDrawerOpen ? { marginRight: '45vw', width: 'auto' } : undefined}
+        className={`transition-all duration-300 px-4 sm:px-6 lg:px-8 w-full mx-auto ${isDrawerOpen ? 'md:mr-[45vw]' : ''}`}
       >
         {/* Header */}
         <div className="sm:flex sm:items-center mb-6">
@@ -570,8 +569,95 @@ export function DocumentiPage() {
         </div>
         {/* ──────────────────────────────────────────────────────────────── */}
 
-        {/* Table */}
-        <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+        {/* ─── Mobile card layout ──────────────────────────────────────── */}
+        <div className="md:hidden space-y-3">
+          {filteredDocumenti.length === 0 ? (
+            <div className="bg-white rounded-xl border border-gray-200 text-center py-12">
+              <svg className="mx-auto h-10 w-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="mt-3 text-sm text-gray-500">Nessun documento corrisponde ai filtri applicati</p>
+              {hasFrontendFilters && (
+                <button onClick={resetFrontendFilters} className="mt-2 text-xs text-indigo-600 hover:underline">
+                  Azzera filtri istantanei
+                </button>
+              )}
+            </div>
+          ) : (
+            filteredDocumenti.map((doc) => {
+              const isUnassigned = doc.cliente_id === null;
+              return (
+                <div
+                  key={doc.id}
+                  onClick={(e) => {
+                    if ((e.target as HTMLElement).closest('button')) return;
+                    setViewingDocument(doc);
+                  }}
+                  className={`rounded-lg border shadow-sm p-4 space-y-2 cursor-pointer ${isUnassigned ? 'bg-red-50/40 border-red-200' : 'bg-white border-gray-200'} ${viewingDocument?.id === doc.id ? 'ring-2 ring-indigo-500' : ''}`}
+                >
+                  {/* Row 1: nome file + stato */}
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-medium text-gray-900 truncate flex-1">{doc.file_name}</p>
+                    {doc.verificato_da_utente ? (
+                      <span className="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">✓ Verificato</span>
+                    ) : doc.classificazione_ai !== null ? (
+                      <span className="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        {doc.confidence_score !== null ? `${Math.round(doc.confidence_score * 100)}%` : 'AI'}
+                      </span>
+                    ) : (
+                      <span className="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">—</span>
+                    )}
+                  </div>
+                  {/* Row 2: tipo + macro + anno */}
+                  <div className="flex flex-wrap gap-1.5 items-center">
+                    {getTipoBadge(doc.tipo_documento)}
+                    {getMacroBadge(doc.macro_categoria)}
+                    {doc.anno_competenza && (
+                      <span className="text-xs text-gray-500 font-medium">Anno {doc.anno_competenza}</span>
+                    )}
+                  </div>
+                  {/* Row 3: cliente */}
+                  <p className="text-xs text-gray-500">
+                    Cliente:{' '}
+                    {isUnassigned ? (
+                      <span className="font-semibold text-red-600">Da Assegnare</span>
+                    ) : (
+                      <span className="font-medium text-gray-700">{clientiMap.current.get(doc.cliente_id!) ?? '—'}</span>
+                    )}
+                  </p>
+                  {/* Row 4: note */}
+                  {doc.note && (
+                    <p className="text-xs text-gray-400 truncate">{doc.note}</p>
+                  )}
+                  {/* Row 5: azioni */}
+                  <div className="flex items-center gap-4 pt-2 border-t border-gray-100">
+                    <button
+                      onClick={() => setSelectedDocumento(doc)}
+                      className="text-amber-600 text-xs font-medium hover:text-amber-800"
+                    >
+                      Modifica
+                    </button>
+                    <button
+                      onClick={() => handleDownload(doc)}
+                      className="text-indigo-600 text-xs font-medium hover:text-indigo-800"
+                    >
+                      Download
+                    </button>
+                    <button
+                      onClick={() => handleDelete(doc)}
+                      className="text-red-500 text-xs font-medium hover:text-red-700"
+                    >
+                      Elimina
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Table — desktop only */}
+        <div className="hidden md:block bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
           {filteredDocumenti.length === 0 ? (
             <div className="text-center py-16">
               <svg className="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
