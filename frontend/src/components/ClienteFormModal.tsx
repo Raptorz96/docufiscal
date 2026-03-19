@@ -63,6 +63,11 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
       return;
     }
 
+    if (!formData.codice_fiscale.trim() && !formData.partita_iva.trim()) {
+      setError('Inserire almeno uno tra Codice Fiscale e Partita IVA');
+      return;
+    }
+
     if (formData.email && !isValidEmail(formData.email)) {
       setError('Formato email non valido');
       return;
@@ -76,8 +81,8 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
         nome: formData.nome.trim(),
         cognome: formData.cognome.trim() || undefined,
         short_id: formData.short_id ? parseInt(formData.short_id, 10) : undefined,
-        codice_fiscale: formData.codice_fiscale.trim() || "",
-        partita_iva: formData.partita_iva.trim() || "",
+        codice_fiscale: formData.codice_fiscale.trim() || undefined,
+        partita_iva: formData.partita_iva.trim() || undefined,
         tipo: formData.tipo,
         email: formData.email.trim() || undefined,
         telefono: formData.telefono.trim() || undefined
@@ -192,7 +197,7 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
 
           <div>
             <label htmlFor="codice_fiscale" className="block text-sm font-medium text-gray-700 mb-1">
-              Codice Fiscale
+              Codice Fiscale **
             </label>
             <input
               type="text"
@@ -206,7 +211,7 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
 
           <div>
             <label htmlFor="partita_iva" className="block text-sm font-medium text-gray-700 mb-1">
-              Partita IVA
+              Partita IVA **
             </label>
             <input
               type="text"
@@ -217,6 +222,8 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
               maxLength={11}
             />
           </div>
+
+          <p className="text-xs text-gray-500 -mt-2">** Almeno uno dei due è obbligatorio</p>
 
           <div>
             <label htmlFor="tipo" className="block text-sm font-medium text-gray-700 mb-1">

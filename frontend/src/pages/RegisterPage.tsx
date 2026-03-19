@@ -77,7 +77,7 @@ const RegisterPage: React.FC = () => {
                 autoComplete="given-name"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Nome"
+                placeholder="Nome *"
                 value={form.nome}
                 onChange={handleChange}
               />
@@ -90,7 +90,7 @@ const RegisterPage: React.FC = () => {
                 autoComplete="family-name"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Cognome"
+                placeholder="Cognome *"
                 value={form.cognome}
                 onChange={handleChange}
               />
@@ -103,7 +103,7 @@ const RegisterPage: React.FC = () => {
                 autoComplete="email"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email"
+                placeholder="Email *"
                 value={form.email}
                 onChange={handleChange}
               />
@@ -116,7 +116,7 @@ const RegisterPage: React.FC = () => {
                 autoComplete="new-password"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password (min. 8 caratteri)"
+                placeholder="Password * (min. 8 caratteri)"
                 value={form.password}
                 onChange={handleChange}
               />
@@ -129,7 +129,7 @@ const RegisterPage: React.FC = () => {
                 autoComplete="new-password"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Conferma password"
+                placeholder="Conferma password *"
                 value={form.confermaPassword}
                 onChange={handleChange}
               />
