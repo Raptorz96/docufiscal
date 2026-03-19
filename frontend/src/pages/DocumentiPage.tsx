@@ -34,6 +34,7 @@ export function DocumentiPage() {
   const [annoFilter, setAnnoFilter] = useState('');
   const [statoFilter, setStatoFilter] = useState<StatoFilter>('tutti');
 
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [selectedDocumento, setSelectedDocumento] = useState<Documento | null>(null);
   /** The document currently open in the PDF side-drawer (managed by context). */
@@ -199,6 +200,17 @@ export function DocumentiPage() {
 
   const hasFrontendFilters = macroCategoriaFilter || annoFilter || statoFilter !== 'tutti' || searchFilter;
 
+  const activeFilterCount = [
+    clienteFilter,
+    contrattoFilter,
+    tipoFilter,
+    macroCategoriaFilter,
+    annoFilter,
+    searchFilter,
+    statoFilter !== 'tutti' ? statoFilter : '',
+    unassignedFilter ? 'yes' : '',
+  ].filter(Boolean).length;
+
   const getTipoBadge = (tipo: TipoDocumento) => (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${TIPO_BADGE_CLASSES[tipo]}`}>
       {TIPO_LABELS[tipo]}
@@ -350,6 +362,34 @@ export function DocumentiPage() {
 
         {/* ─── Sticky Filter Panel ──────────────────────────────────────── */}
         <div className="sticky top-0 z-20 bg-white shadow-md rounded-xl border border-gray-200 mb-4">
+          {/* Mobile toggle */}
+          <button
+            type="button"
+            onClick={() => setFiltersOpen((v) => !v)}
+            className="md:hidden w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <span className="flex items-center gap-2">
+              <svg className="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+              </svg>
+              Filtri
+              {activeFilterCount > 0 && (
+                <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-indigo-600 text-white text-xs font-bold">
+                  {activeFilterCount}
+                </span>
+              )}
+            </span>
+            <svg
+              className={`h-4 w-4 text-gray-400 transition-transform ${filtersOpen ? 'rotate-180' : ''}`}
+              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* Collapsible filter rows — always visible on md+, toggled on mobile */}
+          <div className={`${filtersOpen ? '' : 'hidden'} md:block`}>
+
           {/* Row 1 – Backend filters (trigger API) */}
           <div className="px-6 pt-4 pb-3 border-b border-gray-100">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Filtri Backend</p>
@@ -506,6 +546,8 @@ export function DocumentiPage() {
               ))}
             </div>
           </div>
+
+          </div>{/* end collapsible */}
 
           {/* Results counter + clear */}
           <div className="px-6 py-2 bg-gray-50 rounded-b-xl border-t border-gray-100 flex items-center justify-between">
