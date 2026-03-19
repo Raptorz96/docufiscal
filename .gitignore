@@ -38,6 +38,9 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
 
 # Test cache
 .pytest_cache/
