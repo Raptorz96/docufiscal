@@ -121,8 +121,8 @@ def update_current_user_profile(
     Only non-None fields are applied. Email change is allowed but will
     invalidate the current JWT token (sub = email).
     """
-    # No-op if nothing provided
-    if all(v is None for v in user_data.model_dump().values()):
+    # No-op if nothing provided (exclude_unset=True checks what was actually sent)
+    if not user_data.model_dump(exclude_unset=True):
         return UserResponse.model_validate(current_user)
 
     # Check email uniqueness
