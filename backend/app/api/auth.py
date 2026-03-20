@@ -7,7 +7,7 @@ from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.core.security import hash_password, verify_password, create_access_token
 from app.models.user import User
-from app.schemas.user import UserCreate, UserResponse, Token
+from app.schemas.user import UserCreate, UserResponse, Token, UserUpdate, PasswordChange
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -107,4 +107,41 @@ def get_current_user_profile(
     Returns:
         UserResponse: Current user profile data
     """
+    return UserResponse.model_validate(current_user)
+
+
+@router.patch("/me", response_model=UserResponse)
+def update_current_user_profile(
+    user_data: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> UserResponse:
+    """
+    Update current user's profile (nome, cognome, email).
+    Only non-None fields are applied. Email change is allowed but will
+    invalidate the current JWT token (sub = email).
+    """
+    # No-op if nothing provided
+    if all(v is None for v in user_data.model_dump().values()):
+        return UserResponse.model_validate(current_user)
+
+    # Check email uniqueness
+    if user_data.email is not None and user_data.email != current_user.email:
+        existing = db.query(User).filter(User.email == user_data.email).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email già in uso da un altro account",
+            )
+
+    # Apply updates
+    if user_data.nome is not None:
+        current_user.nome = user_data.nome
+    if user_data.cognome is not None:
+        current_user.cognome = user_data.cognome
+    if user_data.email is not None:
+        current_user.email = user_data.email
+
+    db.commit()
+    db.refresh(current_user)
     return UserResponse.model_validate(current_user)

@@ -134,3 +134,60 @@ class TestMe:
             assert resp.status_code == 401
         finally:
             app.dependency_overrides.clear()
+
+
+# ---------------------------------------------------------------------------
+# Update Profile (PATCH /auth/me)
+# ---------------------------------------------------------------------------
+
+class TestUpdateProfile:
+
+    def test_update_nome_cognome(self, client: TestClient, fake_user) -> None:
+        resp = client.patch("/api/v1/auth/me", json={"nome": "Luigi", "cognome": "Neri"})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["nome"] == "Luigi"
+        assert data["cognome"] == "Neri"
+
+    def test_update_email_success(self, client: TestClient, fake_user) -> None:
+        resp = client.patch("/api/v1/auth/me", json={"email": "nuovo@docufiscal.it"})
+        assert resp.status_code == 200
+        assert resp.json()["email"] == "nuovo@docufiscal.it"
+
+    def test_update_email_conflict(self, client: TestClient, db, fake_user) -> None:
+        from app.models.user import User as UserModel
+        other = UserModel(
+            email="altro@docufiscal.it",
+            hashed_password="x",
+            nome="A",
+            cognome="B",
+        )
+        db.add(other)
+        db.commit()
+        resp = client.patch("/api/v1/auth/me", json={"email": "altro@docufiscal.it"})
+        assert resp.status_code == 409
+
+    def test_update_empty_nome_rejected(self, client: TestClient, fake_user) -> None:
+        resp = client.patch("/api/v1/auth/me", json={"nome": ""})
+        assert resp.status_code == 422
+
+    def test_update_noop(self, client: TestClient, fake_user) -> None:
+        resp = client.patch("/api/v1/auth/me", json={})
+        assert resp.status_code == 200
+        assert resp.json()["nome"] == fake_user.nome
+
+    def test_update_unauthenticated(self, db) -> None:
+        from app.main import app
+        from app.core.database import get_db
+        from fastapi.testclient import TestClient
+
+        def _override():
+            yield db
+
+        app.dependency_overrides[get_db] = _override
+        try:
+            tc = TestClient(app, raise_server_exceptions=False)
+            resp = tc.patch("/api/v1/auth/me", json={"nome": "X"})
+            assert resp.status_code == 401
+        finally:
+            app.dependency_overrides.clear()
