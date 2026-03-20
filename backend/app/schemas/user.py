@@ -1,6 +1,5 @@
 """User-related Pydantic schemas for request/response validation."""
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, EmailStr, ConfigDict, field_validator
 
@@ -44,6 +43,7 @@ class UserUpdate(BaseModel):
     cognome: str | None = None
     email: EmailStr | None = None
 
+    # email is intentionally excluded: EmailStr already rejects empty strings at parse time
     @field_validator('nome', 'cognome')
     @classmethod
     def not_empty(cls, v: str | None) -> str | None:
