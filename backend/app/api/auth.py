@@ -158,19 +158,19 @@ def change_password(
     Verifies current password, enforces min length of 8, then saves new hash.
     Does NOT invalidate existing JWT tokens.
     """
-    if not verify_password(password_data.current_password, current_user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password corrente non corretta",
-        )
-
+    # Validate new password first (cheap) before the expensive bcrypt comparison
     if len(password_data.new_password) < 8:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="La password deve essere di almeno 8 caratteri",
         )
 
+    if not verify_password(password_data.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password corrente non corretta",
+        )
+
     current_user.hashed_password = hash_password(password_data.new_password)
     db.commit()
-    db.refresh(current_user)
     return {"detail": "Password aggiornata con successo"}
