@@ -105,7 +105,12 @@ const AppLayout: FC = () => {
           <div className="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
             {user?.nome?.[0]?.toUpperCase() ?? '?'}
           </div>
-          <span className="text-slate-300 text-sm truncate">{displayName}</span>
+          <NavLink
+            to="/profilo"
+            className="text-slate-300 hover:text-white text-sm truncate underline-offset-2 hover:underline"
+          >
+            {displayName}
+          </NavLink>
         </div>
         <button
           onClick={handleLogout}

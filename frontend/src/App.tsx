@@ -8,6 +8,7 @@ import DashboardPage from './pages/DashboardPage';
 import { ClientiPage } from './pages/ClientiPage';
 import { ContrattiPage } from './pages/ContrattiPage';
 import { DocumentiPage } from './pages/DocumentiPage';
+import ProfilePage from './pages/ProfilePage';
 import { DocumentProvider } from './context/DocumentContext';
 import './App.css';
 
@@ -30,6 +31,7 @@ function App() {
               <Route path="/clienti" element={<ClientiPage />} />
               <Route path="/contratti" element={<ContrattiPage />} />
               <Route path="/documenti" element={<DocumentiPage />} />
+              <Route path="/profilo" element={<ProfilePage />} />
             </Route>
           </Routes>
         </Router>

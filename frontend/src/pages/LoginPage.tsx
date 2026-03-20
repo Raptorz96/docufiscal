@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { AxiosError } from 'axios';
 
 const LoginPage: React.FC = () => {
+  const location = useLocation();
+  const successMessage = (location.state as { message?: string } | null)?.message;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -42,6 +44,11 @@ const LoginPage: React.FC = () => {
             Accedi a DocuFiscal
           </h2>
         </div>
+        {successMessage && (
+          <div className="bg-green-50 border border-green-200 text-green-800 text-sm rounded-md px-4 py-3 text-center">
+            {successMessage}
+          </div>
+        )}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
