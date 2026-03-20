@@ -64,8 +64,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const refreshUser = async (): Promise<void> => {
-    const userData = await authService.getMe();
-    setUser(userData);
+    try {
+      const userData = await authService.getMe();
+      setUser(userData);
+    } catch {
+      authService.removeToken();
+      setUser(null);
+    }
   };
 
   const value: AuthContextType = {
