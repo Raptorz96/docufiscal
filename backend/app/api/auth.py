@@ -145,3 +145,32 @@ def update_current_user_profile(
     db.commit()
     db.refresh(current_user)
     return UserResponse.model_validate(current_user)
+
+
+@router.post("/change-password")
+def change_password(
+    password_data: PasswordChange,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """
+    Change current user's password.
+    Verifies current password, enforces min length of 8, then saves new hash.
+    Does NOT invalidate existing JWT tokens.
+    """
+    if not verify_password(password_data.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password corrente non corretta",
+        )
+
+    if len(password_data.new_password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La password deve essere di almeno 8 caratteri",
+        )
+
+    current_user.hashed_password = hash_password(password_data.new_password)
+    db.commit()
+    db.refresh(current_user)
+    return {"detail": "Password aggiornata con successo"}

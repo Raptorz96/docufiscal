@@ -191,3 +191,117 @@ class TestUpdateProfile:
             assert resp.status_code == 401
         finally:
             app.dependency_overrides.clear()
+
+
+# ---------------------------------------------------------------------------
+# Change Password (POST /auth/change-password)
+# ---------------------------------------------------------------------------
+
+class TestChangePassword:
+
+    def _register_and_login(self, db) -> str:
+        """Register a user with a real password hash and return a valid JWT."""
+        from app.main import app
+        from app.core.database import get_db
+
+        def _override():
+            yield db
+
+        app.dependency_overrides[get_db] = _override
+        tc = TestClient(app, raise_server_exceptions=False)
+        tc.post("/api/v1/auth/register", json={
+            "email": "pwchange@docufiscal.it",
+            "password": "OldPassword1",
+            "nome": "Test",
+            "cognome": "User",
+        })
+        resp = tc.post("/api/v1/auth/login", data={
+            "username": "pwchange@docufiscal.it",
+            "password": "OldPassword1",
+        })
+        app.dependency_overrides.clear()
+        return resp.json()["access_token"]
+
+    def test_change_password_success(self, db) -> None:
+        from app.main import app
+        from app.core.database import get_db
+
+        token = self._register_and_login(db)
+
+        def _override():
+            yield db
+
+        app.dependency_overrides[get_db] = _override
+        try:
+            tc = TestClient(app, raise_server_exceptions=False)
+            resp = tc.post(
+                "/api/v1/auth/change-password",
+                json={"current_password": "OldPassword1", "new_password": "NewPassword2"},
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            assert resp.status_code == 200
+            assert resp.json()["detail"] == "Password aggiornata con successo"
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_change_password_wrong_current(self, db) -> None:
+        from app.main import app
+        from app.core.database import get_db
+
+        token = self._register_and_login(db)
+
+        def _override():
+            yield db
+
+        app.dependency_overrides[get_db] = _override
+        try:
+            tc = TestClient(app, raise_server_exceptions=False)
+            resp = tc.post(
+                "/api/v1/auth/change-password",
+                json={"current_password": "WrongPassword", "new_password": "NewPassword2"},
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            assert resp.status_code == 400
+            assert "corrente" in resp.json()["detail"]
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_change_password_too_short(self, db) -> None:
+        from app.main import app
+        from app.core.database import get_db
+
+        token = self._register_and_login(db)
+
+        def _override():
+            yield db
+
+        app.dependency_overrides[get_db] = _override
+        try:
+            tc = TestClient(app, raise_server_exceptions=False)
+            resp = tc.post(
+                "/api/v1/auth/change-password",
+                json={"current_password": "OldPassword1", "new_password": "short"},
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            assert resp.status_code == 400
+            assert "8" in resp.json()["detail"]
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_change_password_unauthenticated(self, db) -> None:
+        from app.main import app
+        from app.core.database import get_db
+
+        def _override():
+            yield db
+
+        app.dependency_overrides[get_db] = _override
+        try:
+            tc = TestClient(app, raise_server_exceptions=False)
+            resp = tc.post(
+                "/api/v1/auth/change-password",
+                json={"current_password": "any", "new_password": "anypassword"},
+            )
+            assert resp.status_code == 401
+        finally:
+            app.dependency_overrides.clear()
