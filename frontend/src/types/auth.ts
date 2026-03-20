@@ -5,6 +5,7 @@ export interface User {
   cognome: string;
   role: string;
   is_active: boolean;
+  created_at: string;
 }
 
 export interface LoginCredentials {
@@ -22,4 +23,15 @@ export interface RegisterData {
   password: string;
   nome: string;
   cognome: string;
+}
+
+export interface ProfileUpdate {
+  nome?: string;
+  cognome?: string;
+  email?: string;
+}
+
+export interface PasswordChangeRequest {
+  current_password: string;
+  new_password: string;
 }

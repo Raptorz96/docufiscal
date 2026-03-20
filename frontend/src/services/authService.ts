@@ -1,5 +1,5 @@
 import api from './api';
-import type { LoginCredentials, AuthResponse, User } from '../types/auth';
+import type { LoginCredentials, AuthResponse, User, ProfileUpdate, PasswordChangeRequest } from '../types/auth';
 
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   const formData = new URLSearchParams();
@@ -30,4 +30,13 @@ export const removeToken = (): void => {
 
 export const getToken = (): string | null => {
   return localStorage.getItem('access_token');
+};
+
+export const updateProfile = async (data: ProfileUpdate): Promise<User> => {
+  const response = await api.patch<User>('/auth/me', data);
+  return response.data;
+};
+
+export const changePassword = async (data: PasswordChangeRequest): Promise<void> => {
+  await api.post('/auth/change-password', data);
 };
