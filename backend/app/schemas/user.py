@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, field_validator
 
 
 class UserCreate(BaseModel):
@@ -36,3 +36,23 @@ class Token(BaseModel):
     """Schema for JWT token response."""
     access_token: str
     token_type: str
+
+
+class UserUpdate(BaseModel):
+    """Schema for user profile update. All fields optional — only non-None are applied."""
+    nome: str | None = None
+    cognome: str | None = None
+    email: EmailStr | None = None
+
+    @field_validator('nome', 'cognome')
+    @classmethod
+    def not_empty(cls, v: str | None) -> str | None:
+        if v is not None and v.strip() == '':
+            raise ValueError('Il campo non può essere vuoto')
+        return v
+
+
+class PasswordChange(BaseModel):
+    """Schema for password change. Length validation is in the route handler (→ 400)."""
+    current_password: str
+    new_password: str
