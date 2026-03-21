@@ -41,6 +41,19 @@ class TestRegister:
         finally:
             app.dependency_overrides.clear()
 
+    def test_register_short_password(self, db: Session) -> None:
+        tc = _raw_client(db)
+        try:
+            resp = tc.post("/api/v1/auth/register", json={
+                "email": "short@docufiscal.it",
+                "password": "ab",
+                "nome": "Test",
+                "cognome": "User",
+            })
+            assert resp.status_code == 422
+        finally:
+            app.dependency_overrides.clear()
+
     def test_register_duplicate_email(self, db: Session) -> None:
         tc = _raw_client(db)
         try:

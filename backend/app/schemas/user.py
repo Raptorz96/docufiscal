@@ -11,6 +11,13 @@ class UserCreate(BaseModel):
     nome: str
     cognome: str
 
+    @field_validator('password')
+    @classmethod
+    def password_min_length(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError('La password deve essere di almeno 8 caratteri')
+        return v
+
 
 class UserLogin(BaseModel):
     """Schema for user login request."""

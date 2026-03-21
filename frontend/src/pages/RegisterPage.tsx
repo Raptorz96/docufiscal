@@ -19,9 +19,6 @@ const RegisterPage: React.FC = () => {
     if (!form.nome || !form.cognome || !form.email || !form.password || !form.confermaPassword) {
       return 'Tutti i campi sono obbligatori';
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      return 'Email non valida';
-    }
     if (form.password.length < 8) {
       return 'La password deve essere di almeno 8 caratteri';
     }
