@@ -162,7 +162,6 @@ async def upload_documento(
         )
 
         # --- Local matching fallback (if regex and level 1 failed) ---
-        print(f"DATI ESTRATTI DALL'IA: {classification_result}")
         if matched_cliente_id is None:
             cf = classification_result.codice_fiscale
             pi = classification_result.partita_iva
