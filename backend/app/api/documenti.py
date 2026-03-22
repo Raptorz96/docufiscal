@@ -252,7 +252,39 @@ async def upload_documento(
                 macro_categoria=documento.macro_categoria,
                 anno_competenza=documento.anno_competenza
             )
-            
+
+        # --- Contract structured extraction (best-effort) ---
+        if documento.tipo_documento == "contratto" and documento.cliente_id is not None and extracted_text.strip():
+            try:
+                from app.ai.contract_extractor import extract_contract_data
+                from app.models.scadenza_contratto import ScadenzaContratto
+                extraction = await anyio.to_thread.run_sync(
+                    lambda: extract_contract_data(extracted_text)
+                )
+                if extraction.confidence > 0:
+                    scadenza = ScadenzaContratto(
+                        documento_id=documento.id,
+                        cliente_id=documento.cliente_id,
+                        data_inizio=extraction.data_inizio,
+                        data_scadenza=extraction.data_scadenza,
+                        durata=extraction.durata,
+                        rinnovo_automatico=extraction.rinnovo_automatico,
+                        preavviso_disdetta=extraction.preavviso_disdetta,
+                        canone=extraction.canone,
+                        parti_coinvolte=extraction.parti_coinvolte,
+                        clausole_chiave=extraction.clausole_chiave,
+                        confidence_score=extraction.confidence,
+                    )
+                    db.add(scadenza)
+                    db.commit()
+                    logger.info(
+                        "Contract extraction saved for documento %d (confidence=%.2f)",
+                        documento.id,
+                        extraction.confidence,
+                    )
+            except Exception:
+                logger.exception("Contract extraction failed for documento %d, skipping", documento.id)
+
         return DocumentoOut.model_validate(documento)
     except Exception:
         db.rollback()

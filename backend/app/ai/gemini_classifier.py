@@ -101,6 +101,15 @@ class GeminiClassifier(BaseClassifier):
             logger.exception("Gemini classification failed")
             return _DEFAULT_RESULT
 
+    def raw_json_call(self, prompt: str) -> dict:
+        """Send prompt to Gemini and return parsed JSON dict."""
+        response = self.client.models.generate_content(
+            model=self.model,
+            contents=prompt,
+            config={"response_mime_type": "application/json"},
+        )
+        return json.loads(response.text)
+
     async def aclassify(
         self,
         text: str,

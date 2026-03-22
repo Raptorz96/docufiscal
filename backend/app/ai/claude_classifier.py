@@ -78,7 +78,7 @@ class ClaudeClassifier(BaseClassifier):
                 raw_response=data,
             )
 
-        except anthropic.AuthenticationError:
+        except anthropic.AuthenticationError:  # type: ignore[attr-defined]
             logger.error("Invalid Claude API key")
             return _DEFAULT_RESULT
         except anthropic.RateLimitError:
@@ -87,3 +87,26 @@ class ClaudeClassifier(BaseClassifier):
         except Exception:
             logger.exception("Claude classification failed")
             return _DEFAULT_RESULT
+
+    def raw_json_call(self, prompt: str) -> dict:
+        """Send prompt to Claude and return parsed JSON dict."""
+        response = self.client.messages.create(
+            model=self.model,
+            max_tokens=2048,
+            system="Rispondi SOLO con un JSON valido, senza testo aggiuntivo.",
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return json.loads(response.content[0].text)
+
+    async def aclassify(
+        self,
+        text: str,
+        available_types: list[str],
+        clienti_context: list[dict] | None = None,
+        skip_client_id: bool = False,
+    ) -> ClassificationResult:
+        """Asynchronous classification — delegates to synchronous classify."""
+        import anyio
+        return await anyio.to_thread.run_sync(
+            lambda: self.classify(text, available_types, clienti_context)
+        )

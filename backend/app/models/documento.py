@@ -184,6 +184,13 @@ class Documento(Base):
         doc="Relationship to the contract"
     )
 
+    scadenza_contratto: Mapped[Optional["ScadenzaContratto"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
+        "ScadenzaContratto",
+        back_populates="documento",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+
     def __repr__(self) -> str:
         """String representation of Documento instance."""
         return f"<Documento(id={self.id}, cliente_id={self.cliente_id}, macro='{self.macro_categoria}', tipo='{self.tipo_documento}', anno={self.anno_competenza})>"

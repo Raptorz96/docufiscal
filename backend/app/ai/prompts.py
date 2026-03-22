@@ -24,6 +24,7 @@ MACRO_DESCRIPTIONS: dict[str, str] = {
 }
 
 MAX_TEXT_CHARS: int = 4000
+MAX_CONTRACT_TEXT_CHARS: int = 8000
 
 
 def build_classification_prompt(
@@ -119,6 +120,57 @@ Restituisci il risultato in formato JSON coerente con lo schema richiesto:
   "codice_fiscale": "string or null",
   "partita_iva": "string or null",
   "contratto_suggerito": "string or null"
+}}
+"""
+
+
+def build_contract_extraction_prompt(text: str) -> str:
+    """Build the prompt for extracting structured data from a contract.
+
+    Args:
+        text: Full extracted text (truncated to MAX_CONTRACT_TEXT_CHARS internally).
+
+    Returns:
+        Prompt string ready to send to any LLM.
+    """
+    truncated_text = text[:MAX_CONTRACT_TEXT_CHARS]
+    if len(text) > MAX_CONTRACT_TEXT_CHARS:
+        truncated_text += "\n[... testo troncato ...]"
+
+    return f"""PERSONA:
+Sei un Consulente Legale Senior esperto in contrattualistica italiana.
+Il tuo compito è estrarre dati strutturati da contratti.
+
+TASK:
+Analizza il testo del contratto e estrai i seguenti campi.
+Se un'informazione non è presente o non è chiara, usa null.
+Per le date usa il formato YYYY-MM-DD.
+
+CAMPI DA ESTRARRE:
+- data_inizio: data di decorrenza del contratto
+- data_scadenza: data di scadenza naturale
+- durata: durata testuale (es. "6 anni", "12 mesi")
+- rinnovo_automatico: true/false/null
+- preavviso_disdetta: termine per la disdetta (es. "6 mesi prima della scadenza")
+- canone: importo e frequenza (es. "€800/mese", "€9600/anno")
+- parti_coinvolte: array di nomi delle parti contraenti
+- clausole_chiave: array di clausole rilevanti (rescissione, penali, vincoli, garanzie)
+- confidence: 0.0-1.0 — quanto sei sicuro dell'estrazione complessiva
+
+TESTO DEL CONTRATTO:
+{truncated_text}
+
+Rispondi SOLO con un JSON valido:
+{{
+  "data_inizio": "YYYY-MM-DD or null",
+  "data_scadenza": "YYYY-MM-DD or null",
+  "durata": "string or null",
+  "rinnovo_automatico": true/false/null,
+  "preavviso_disdetta": "string or null",
+  "canone": "string or null",
+  "parti_coinvolte": ["string"] or null,
+  "clausole_chiave": ["string"] or null,
+  "confidence": number
 }}
 """
 

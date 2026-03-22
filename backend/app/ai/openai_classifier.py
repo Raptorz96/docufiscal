@@ -63,6 +63,19 @@ class OpenAIClassifier(BaseClassifier):
                 confidence=0.0
             )
 
+    def raw_json_call(self, prompt: str) -> dict:
+        """Send prompt to OpenAI and return parsed JSON dict."""
+        response = self.client.chat.completions.create(
+            model=self.model if "gpt" in self.model else "gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Rispondi SOLO con un JSON valido, senza testo aggiuntivo."},
+                {"role": "user", "content": prompt},
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.1,
+        )
+        return json.loads(response.choices[0].message.content)
+
     async def aclassify(
         self,
         text: str,

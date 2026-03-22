@@ -82,6 +82,14 @@ class BaseClassifier(ABC):
     ) -> ClassificationResult:
         """Asynchronous version of classify."""
 
+    @abstractmethod
+    def raw_json_call(self, prompt: str) -> dict:
+        """Send prompt to LLM and return parsed JSON response.
+
+        System prompt is fixed to JSON-only output.
+        Raises on unrecoverable errors; caller must handle exceptions.
+        """
+
 
 def get_classifier() -> BaseClassifier:
     """Return the configured classifier, creating it once (singleton).
