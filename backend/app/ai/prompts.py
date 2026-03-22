@@ -175,9 +175,14 @@ Rispondi SOLO con un JSON valido:
 """
 
 
-def build_rag_chat_prompt(query: str, chunks: list[dict]) -> str:
+def build_rag_chat_prompt(query: str, chunks: list[dict], scadenze_context: str = "") -> str:
     """
     Build a prompt for RAG-based chat using retrieved document chunks.
+
+    Args:
+        query: The user's question.
+        chunks: Document chunks from the vector store.
+        scadenze_context: Optional structured contract deadline data from scadenze_contratto.
     """
     context_parts = []
     for chunk in chunks:
@@ -189,7 +194,17 @@ def build_rag_chat_prompt(query: str, chunks: list[dict]) -> str:
 
     context_str = "\n\n".join(context_parts)
 
-    return f"""Sei un assistente esperto dello studio professionale DocuFiscal. 
+    scadenze_section = ""
+    if scadenze_context:
+        scadenze_section = f"""SCADENZE CONTRATTI (dati strutturati estratti da AI):
+{scadenze_context}
+
+NOTA: Per domande su scadenze, date, canoni e clausole contrattuali, usa PRIORITARIAMENTE i dati strutturati sopra.
+Cita comunque i documenti con [ID: numero] quando disponibili.
+
+"""
+
+    return f"""Sei un assistente esperto dello studio professionale DocuFiscal.
 Il tuo compito è rispondere alle domande degli utenti basandoti ESCLUSIVAMENTE sui documenti forniti nel CONTESTO sotto.
 
 REGOLE:
@@ -200,7 +215,7 @@ REGOLE:
 5. Non inventare informazioni non presenti nei documenti.
 6. Rispondi in Italiano.
 
-CONTESTO DOCUMENTI:
+{scadenze_section}CONTESTO DOCUMENTI:
 {context_str}
 
 DOMANDA UTENTE:
