@@ -1,12 +1,15 @@
 """User model for DocuFiscal application."""
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Boolean, DateTime, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.models.google_token import GoogleToken
 
 
 class User(Base):
@@ -86,6 +89,10 @@ class User(Base):
         server_default=func.now(),
         onupdate=func.now(),
         doc="Timestamp when user was last updated"
+    )
+
+    google_token: Mapped[Optional["GoogleToken"]] = relationship(
+        "GoogleToken", back_populates="user", uselist=False, cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:

@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     CONFIDENCE_THRESHOLD: float = 0.80
     MAX_UPLOAD_SIZE: int = 50 * 1024 * 1024  # 50 MB in bytes
+    # Google OAuth2
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/google/callback"
     ALLOWED_MIME_TYPES: list[str] = Field(
         default=[
             "application/pdf",
