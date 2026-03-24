@@ -1,6 +1,7 @@
 """
 Shared prompt utilities for document classification.
 """
+from datetime import date
 
 TIPO_DESCRIPTIONS: dict[str, str] = {
     "dichiarazione_redditi": "Modello 730, Modello Redditi PF/SC/SP",
@@ -175,7 +176,12 @@ Rispondi SOLO con un JSON valido:
 """
 
 
-def build_rag_chat_prompt(query: str, chunks: list[dict], scadenze_context: str = "") -> str:
+def build_rag_chat_prompt(
+    query: str,
+    chunks: list[dict],
+    scadenze_context: str = "",
+    calendar_enabled: bool = False,
+) -> str:
     """
     Build a prompt for RAG-based chat using retrieved document chunks.
 
@@ -183,6 +189,7 @@ def build_rag_chat_prompt(query: str, chunks: list[dict], scadenze_context: str 
         query: The user's question.
         chunks: Document chunks from the vector store.
         scadenze_context: Optional structured contract deadline data from scadenze_contratto.
+        calendar_enabled: If True, inject Google Calendar action instructions.
     """
     context_parts = []
     for chunk in chunks:
@@ -204,6 +211,32 @@ Cita comunque i documenti con [ID: numero] quando disponibili.
 
 """
 
+    calendar_section = ""
+    if calendar_enabled:
+        today = date.today().isoformat()
+        calendar_section = f"""
+AZIONI CALENDARIO:
+Puoi creare eventi su Google Calendar per l'utente. Se l'utente chiede di fissare un appuntamento, riunione, reminder o promemoria:
+
+CASO A — Scadenza contratto dal sistema:
+Se l'utente si riferisce a una scadenza di un contratto presente nelle SCADENZE CONTRATTI sopra, rispondi normalmente E aggiungi alla fine:
+--- CALENDAR_ACTION ---
+{{"type": "from_scadenza", "scadenza_id": <id numerico>}}
+
+CASO B — Evento generico (appuntamento, riunione, etc):
+Estrai titolo, data e orari dalla richiesta. La data di oggi è {today}. Rispondi normalmente E aggiungi alla fine:
+--- CALENDAR_ACTION ---
+{{"type": "custom", "summary": "titolo evento", "description": "dettagli opzionali", "event_date": "YYYY-MM-DD", "start_datetime": "YYYY-MM-DDTHH:MM:SS" o null, "end_datetime": "YYYY-MM-DDTHH:MM:SS" o null}}
+
+REGOLE CALENDARIO:
+- Se l'utente specifica solo una data senza orario → usa event_date (all-day).
+- Se l'utente specifica data + orario → usa start_datetime e end_datetime. Se non c'è durata, assumi 1 ora.
+- Se la data non è chiara, chiedi chiarimento. NON inventare date.
+- Inserisci CALENDAR_ACTION solo se l'utente ha ESPLICITAMENTE chiesto di creare un evento. Non farlo mai di tua iniziativa.
+- Il blocco CALENDAR_ACTION va DOPO --- CITATIONS --- (se presente), come ultima sezione.
+
+"""
+
     return f"""Sei un assistente esperto dello studio professionale DocuFiscal.
 Il tuo compito è rispondere alle domande degli utenti basandoti ESCLUSIVAMENTE sui documenti forniti nel CONTESTO sotto.
 
@@ -214,7 +247,7 @@ REGOLE:
 4. Se il contesto NON contiene informazioni sufficienti, spiega gentilmente che non hai dati su quell'argomento specifico tra i documenti caricati.
 5. Non inventare informazioni non presenti nei documenti.
 6. Rispondi in Italiano.
-
+{calendar_section}
 {scadenze_section}CONTESTO DOCUMENTI:
 {context_str}
 
