@@ -13,3 +13,14 @@ export async function getGoogleAuthorizeUrl(): Promise<string> {
 export async function disconnectGoogle(): Promise<void> {
   await api.delete('/google/disconnect');
 }
+
+export async function createEventFromScadenza(
+  scadenzaId: number,
+  reminderMinutes: number = 1440
+): Promise<{ success: boolean; event_link?: string; error?: string }> {
+  const res = await api.post('/calendar/events/from-scadenza', {
+    scadenza_id: scadenzaId,
+    reminder_minutes: reminderMinutes,
+  });
+  return res.data;
+}

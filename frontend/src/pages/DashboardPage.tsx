@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getDashboardStats } from '@/services/dashboardService';
+import { getGoogleStatus, createEventFromScadenza } from '@/services/googleService';
 import type { DashboardStats, ScadenzaDashboard } from '@/types/dashboard';
 
 // Inline SVG components to replace lucide-react dependency
@@ -46,9 +47,24 @@ function scadenzaBadgeLabel(giorni: number | null): string {
   return `Tra ${giorni} giorni`;
 }
 
-function ScadenzaCard({ s }: { s: ScadenzaDashboard }) {
+function ScadenzaCard({ s, googleConnected }: { s: ScadenzaDashboard; googleConnected: boolean }) {
   const navigate = useNavigate();
   const giorni = s.giorni_rimanenti;
+  const [calLoading, setCalLoading] = useState(false);
+  const [calResult, setCalResult] = useState<'success' | 'error' | null>(null);
+
+  const handleAddToCalendar = async () => {
+    setCalLoading(true);
+    setCalResult(null);
+    try {
+      const res = await createEventFromScadenza(s.id);
+      setCalResult(res.success ? 'success' : 'error');
+    } catch {
+      setCalResult('error');
+    } finally {
+      setCalLoading(false);
+    }
+  };
 
   const borderColor =
     giorni === null ? 'border-gray-100'
@@ -117,6 +133,26 @@ function ScadenzaCard({ s }: { s: ScadenzaDashboard }) {
           <span className="font-medium text-gray-500">Preavviso:</span> {s.preavviso_disdetta}
         </p>
       )}
+
+      {/* Google Calendar button */}
+      {googleConnected && s.data_scadenza && (
+        <div className="pt-2 mt-auto border-t border-gray-100">
+          {calResult === 'success' ? (
+            <span className="text-xs text-green-600 font-medium">✓ Aggiunto al calendario</span>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAddToCalendar();
+              }}
+              disabled={calLoading}
+              className="w-full text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg py-1.5 transition-colors disabled:opacity-50"
+            >
+              {calLoading ? 'Creazione...' : calResult === 'error' ? 'Riprova — errore' : '📅 Aggiungi a Calendar'}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -124,6 +160,7 @@ function ScadenzaCard({ s }: { s: ScadenzaDashboard }) {
 const DashboardPage: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [googleConnected, setGoogleConnected] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -134,6 +171,12 @@ const DashboardPage: React.FC = () => {
         console.error('Error fetching dashboard data:', error);
       } finally {
         setLoading(false);
+      }
+      try {
+        const gStatus = await getGoogleStatus();
+        setGoogleConnected(gStatus.connected);
+      } catch {
+        // silently ignore — google not configured
       }
     };
     fetchData();
@@ -260,7 +303,7 @@ const DashboardPage: React.FC = () => {
         {critiche.length > 0 ? (
           <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {critiche.map((s) => (
-              <ScadenzaCard key={s.id} s={s} />
+              <ScadenzaCard key={s.id} s={s} googleConnected={googleConnected} />
             ))}
           </div>
         ) : (
