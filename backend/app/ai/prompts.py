@@ -256,3 +256,41 @@ DOMANDA UTENTE:
 
 RISPOSTA:
 """
+
+
+def build_deadline_extraction_prompt(text: str, tipo_documento: str) -> str:
+    """Build the prompt for extracting a single deadline from any document type."""
+    truncated_text = text[:MAX_CONTRACT_TEXT_CHARS]
+    if len(text) > MAX_CONTRACT_TEXT_CHARS:
+        truncated_text += "\n[... testo troncato ...]"
+
+    return f"""PERSONA:
+Sei un Assistente Fiscale Senior esperto in documentazione italiana.
+
+TASK:
+Analizza il testo del documento (tipo: {tipo_documento}) e individua la scadenza più
+rilevante, se presente. NON tutti i documenti hanno scadenze — se non c'è nessuna scadenza,
+rispondi con "has_deadline": false.
+
+TIPI DI SCADENZA POSSIBILI:
+- "pagamento": scadenza per un pagamento (F24, tasse, tributi, bollette)
+- "incasso": scadenza per incassare un credito (fatture emesse, note di credito)
+- "canone": scadenza di un canone ricorrente (affitto, leasing, abbonamento)
+- "adempimento": scadenza per un adempimento burocratico (dichiarazioni, comunicazioni)
+- "rinnovo": scadenza per rinnovo di un contratto o servizio
+- "generico": altra scadenza non classificabile
+
+TESTO DEL DOCUMENTO:
+{truncated_text}
+
+Rispondi SOLO con un JSON valido:
+{{
+  "has_deadline": true/false,
+  "tipo_scadenza": "pagamento|incasso|canone|adempimento|rinnovo|generico",
+  "data_scadenza": "YYYY-MM-DD or null",
+  "data_inizio": "YYYY-MM-DD or null",
+  "importo": "string or null (es. '€500', '€1200/mese')",
+  "descrizione": "breve descrizione della scadenza in italiano (max 100 caratteri)",
+  "confidence": 0.0-1.0
+}}
+"""
