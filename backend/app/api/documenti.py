@@ -254,14 +254,38 @@ async def upload_documento(
                 anno_competenza=documento.anno_competenza
             )
 
-        # --- Contract structured extraction (best-effort) ---
-        # Always extract if is_contratto=True (user explicitly uploaded from Contratti section)
-        # OR if AI classified as contratto
-        should_extract = (
+        # --- Fase A: Estrazione scadenze generiche (TUTTI i documenti) ---
+        if extracted_text.strip() and documento.cliente_id is not None:
+            try:
+                from app.ai.deadline_extractor import extract_deadline
+                from app.models.scadenza import Scadenza
+                deadline = extract_deadline(extracted_text, documento.tipo_documento)
+                if deadline.has_deadline and deadline.data_scadenza:
+                    scadenza = Scadenza(
+                        documento_id=documento.id,
+                        cliente_id=documento.cliente_id,
+                        tipo_scadenza=deadline.tipo_scadenza,
+                        data_inizio=deadline.data_inizio,
+                        data_scadenza=deadline.data_scadenza,
+                        canone=deadline.importo,
+                        descrizione=deadline.descrizione,
+                        confidence_score=deadline.confidence,
+                    )
+                    db.add(scadenza)
+                    db.commit()
+                    logger.info(
+                        "Deadline extracted for documento %d (tipo=%s)",
+                        documento.id, deadline.tipo_scadenza,
+                    )
+            except Exception:
+                logger.exception("Deadline extraction failed for documento %d, skipping", documento.id)
+
+        # --- Fase B: Estrazione aggiuntiva contratto (solo is_contratto o tipo==contratto) ---
+        should_extract_contract = (
             is_contratto
             or documento.tipo_documento == "contratto"
         )
-        if should_extract and documento.cliente_id is not None and extracted_text.strip():
+        if should_extract_contract and documento.cliente_id is not None and extracted_text.strip():
             try:
                 from app.ai.contract_extractor import extract_contract_data
                 from app.models.scadenza import Scadenza
@@ -269,25 +293,44 @@ async def upload_documento(
                     lambda: extract_contract_data(extracted_text)
                 )
                 if extraction.confidence > 0:
-                    scadenza = Scadenza(
-                        documento_id=documento.id,
-                        cliente_id=documento.cliente_id,
-                        data_inizio=extraction.data_inizio,
-                        data_scadenza=extraction.data_scadenza,
-                        durata=extraction.durata,
-                        rinnovo_automatico=extraction.rinnovo_automatico,
-                        preavviso_disdetta=extraction.preavviso_disdetta,
-                        canone=extraction.canone,
-                        parti_coinvolte=extraction.parti_coinvolte,
-                        clausole_chiave=extraction.clausole_chiave,
-                        confidence_score=extraction.confidence,
-                    )
-                    db.add(scadenza)
-                    db.commit()
+                    existing_scadenza = db.query(Scadenza).filter(
+                        Scadenza.documento_id == documento.id
+                    ).first()
+                    if existing_scadenza:
+                        existing_scadenza.tipo_scadenza = "canone"
+                        existing_scadenza.durata = extraction.durata
+                        existing_scadenza.rinnovo_automatico = extraction.rinnovo_automatico
+                        existing_scadenza.preavviso_disdetta = extraction.preavviso_disdetta
+                        existing_scadenza.parti_coinvolte = extraction.parti_coinvolte
+                        existing_scadenza.clausole_chiave = extraction.clausole_chiave
+                        if extraction.canone:
+                            existing_scadenza.canone = extraction.canone
+                        if extraction.data_scadenza and not existing_scadenza.data_scadenza:
+                            existing_scadenza.data_scadenza = extraction.data_scadenza
+                        if extraction.data_inizio and not existing_scadenza.data_inizio:
+                            existing_scadenza.data_inizio = extraction.data_inizio
+                        db.commit()
+                    else:
+                        scadenza = Scadenza(
+                            documento_id=documento.id,
+                            cliente_id=documento.cliente_id,
+                            tipo_scadenza="canone",
+                            data_inizio=extraction.data_inizio,
+                            data_scadenza=extraction.data_scadenza,
+                            durata=extraction.durata,
+                            rinnovo_automatico=extraction.rinnovo_automatico,
+                            preavviso_disdetta=extraction.preavviso_disdetta,
+                            canone=extraction.canone,
+                            parti_coinvolte=extraction.parti_coinvolte,
+                            clausole_chiave=extraction.clausole_chiave,
+                            descrizione="Scadenza contratto",
+                            confidence_score=extraction.confidence,
+                        )
+                        db.add(scadenza)
+                        db.commit()
                     logger.info(
                         "Contract extraction saved for documento %d (confidence=%.2f)",
-                        documento.id,
-                        extraction.confidence,
+                        documento.id, extraction.confidence,
                     )
             except Exception:
                 logger.exception("Contract extraction failed for documento %d, skipping", documento.id)
