@@ -38,6 +38,7 @@ async def upload_documento(
     contratto_id: Optional[int] = Form(None),
     tipo_documento: str = Form("altro"),
     note: Optional[str] = Form(None),
+    is_contratto: bool = Form(False),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -222,6 +223,7 @@ async def upload_documento(
             file_size=file_size,
             mime_type=mime_type,
             note=note,
+            is_contratto=is_contratto,
         )
         
         if classification_result:
@@ -253,7 +255,13 @@ async def upload_documento(
             )
 
         # --- Contract structured extraction (best-effort) ---
-        if documento.tipo_documento == "contratto" and documento.cliente_id is not None and extracted_text.strip():
+        # Always extract if is_contratto=True (user explicitly uploaded from Contratti section)
+        # OR if AI classified as contratto
+        should_extract = (
+            is_contratto
+            or documento.tipo_documento == "contratto"
+        )
+        if should_extract and documento.cliente_id is not None and extracted_text.strip():
             try:
                 from app.ai.contract_extractor import extract_contract_data
                 from app.models.scadenza_contratto import ScadenzaContratto
@@ -302,6 +310,7 @@ def list_documenti(
     contratto_id: Optional[int] = Query(None, description="Filter by contratto_id"),
     tipo_documento: Optional[str] = Query(None, description="Filter by tipo_documento"),
     unassigned: bool = Query(False, description="Filter only unassigned documents (cliente_id is null)"),
+    is_contratto: Optional[bool] = Query(None, description="Filter by is_contratto flag"),
     search: Optional[str] = Query(None, description="Search in file name"),
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=500, description="Maximum number of records to return"),
@@ -328,7 +337,9 @@ def list_documenti(
         query = query.filter(Documento.contratto_id == contratto_id)
     if unassigned:
         query = query.filter(Documento.cliente_id == None)
-    
+    if is_contratto is not None:
+        query = query.filter(Documento.is_contratto == is_contratto)
+
     if tipo_documento is not None:
         query = query.filter(Documento.tipo_documento == tipo_documento)
     

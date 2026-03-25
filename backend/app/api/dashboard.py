@@ -64,6 +64,7 @@ def get_dashboard_stats(
             Cliente.nome.label("cliente_nome"),
             Cliente.cognome.label("cliente_cognome"),
             Documento.file_name,
+            Documento.is_contratto,
             ScadenzaContratto.data_scadenza,
             ScadenzaContratto.canone,
             ScadenzaContratto.rinnovo_automatico,
@@ -103,6 +104,7 @@ def get_dashboard_stats(
             preavviso_disdetta=r.preavviso_disdetta,
             confidence_score=r.confidence_score,
             verificato=r.verificato,
+            is_contratto=r.is_contratto if r.is_contratto is not None else False,
         )
         for r in critiche_rows
     ]
@@ -172,6 +174,7 @@ def get_upcoming_deadlines(
             Cliente.nome.label("cliente_nome"),
             Cliente.cognome.label("cliente_cognome"),
             Documento.file_name,
+            Documento.is_contratto,
             ScadenzaContratto.data_scadenza,
             ScadenzaContratto.canone,
             ScadenzaContratto.rinnovo_automatico,
@@ -206,6 +209,7 @@ def get_upcoming_deadlines(
             preavviso_disdetta=r.preavviso_disdetta,
             confidence_score=r.confidence_score,
             verificato=r.verificato,
+            is_contratto=r.is_contratto if r.is_contratto is not None else False,
         )
         for r in rows
     ]

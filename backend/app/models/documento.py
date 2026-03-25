@@ -150,6 +150,13 @@ class Documento(Base):
         doc="Whether user has verified the classification"
     )
 
+    is_contratto: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        server_default="false",
+        doc="True if uploaded from Contratti section"
+    )
+
     note: Mapped[Optional[str]] = mapped_column(
         Text,
         nullable=True,

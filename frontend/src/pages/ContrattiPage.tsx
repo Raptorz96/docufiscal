@@ -3,10 +3,13 @@ import { AxiosError } from 'axios';
 import { getContratti, deleteContratto } from '@/services/contrattiService';
 import { getClienti } from '@/services/clientiService';
 import { getTipiContratto } from '@/services/tipiContrattoService';
+import { getContrattiDocumenti } from '@/services/documentoService';
 import type { Contratto } from '@/types/contratto';
 import type { Cliente } from '@/types/cliente';
 import type { TipoContratto } from '@/types/tipoContratto';
+import type { Documento } from '@/types/documento';
 import { ContrattoFormModal } from '@/components/ContrattoFormModal';
+import { UploadDocumentoModal } from '@/components/UploadDocumentoModal';
 
 export function ContrattiPage() {
   const [contratti, setContratti] = useState<Contratto[]>([]);
@@ -19,6 +22,9 @@ export function ContrattiPage() {
   const [statoFilter, setStatoFilter] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingContratto, setEditingContratto] = useState<Contratto | undefined>(undefined);
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [contrattiDocumenti, setContrattiDocumenti] = useState<Documento[]>([]);
+  const [uploadBanner, setUploadBanner] = useState<string | null>(null);
 
   // Maps per lookup nomi
   const clientiMap = useRef<Map<number, string>>(new Map());
@@ -55,6 +61,15 @@ export function ContrattiPage() {
     }
   }, []);
 
+  const loadContrattiDocumenti = useCallback(async () => {
+    try {
+      const data = await getContrattiDocumenti();
+      setContrattiDocumenti(data);
+    } catch {
+      // non-critical, silently ignore
+    }
+  }, []);
+
   const loadContratti = useCallback(async () => {
     try {
       setLoading(true);
@@ -80,7 +95,7 @@ export function ContrattiPage() {
   useEffect(() => {
     const initializeData = async () => {
       await loadSupportData();
-      await loadContratti();
+      await Promise.all([loadContratti(), loadContrattiDocumenti()]);
     };
     initializeData();
   }, []);
@@ -125,6 +140,13 @@ export function ContrattiPage() {
   const handleModalSuccess = () => {
     setIsModalOpen(false);
     loadContratti();
+  };
+
+  const handleUploadSuccess = (doc: Documento) => {
+    setIsUploadOpen(false);
+    setUploadBanner(`"${doc.file_name}" caricato con successo e in elaborazione AI.`);
+    loadContrattiDocumenti();
+    setTimeout(() => setUploadBanner(null), 5000);
   };
 
   const handleRetry = async () => {
@@ -174,12 +196,24 @@ export function ContrattiPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {uploadBanner && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-800">
+            {uploadBanner}
+          </div>
+        )}
+
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
             <h1 className="text-2xl font-semibold text-gray-900">Contratti</h1>
             <p className="mt-2 text-sm text-gray-700">Gestione dei contratti</p>
           </div>
-          <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+          <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex gap-2">
+            <button
+              onClick={() => setIsUploadOpen(true)}
+              className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+            >
+              Carica Contratto PDF
+            </button>
             <button
               onClick={handleCreateClick}
               className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
@@ -310,6 +344,45 @@ export function ContrattiPage() {
         </div>
       </div>
 
+      {/* PDF Contracts Section */}
+      {contrattiDocumenti.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Contratti caricati (PDF)</h2>
+          <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">File</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data caricamento</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stato AI</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {contrattiDocumenti.map((doc) => (
+                  <tr key={doc.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{doc.file_name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{doc.tipo_documento_raw || doc.tipo_documento}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(doc.created_at).toLocaleDateString('it-IT')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {doc.verificato_da_utente ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Verificato</span>
+                      ) : doc.classificazione_ai ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Da verificare</span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">In elaborazione</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       <ContrattoFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -317,6 +390,13 @@ export function ContrattiPage() {
         contratto={editingContratto}
         clienti={clienti}
         tipiContratto={tipiContratto}
+      />
+
+      <UploadDocumentoModal
+        isOpen={isUploadOpen}
+        onClose={() => setIsUploadOpen(false)}
+        onSuccess={handleUploadSuccess}
+        isContratto={true}
       />
     </div>
   );

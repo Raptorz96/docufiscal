@@ -6,6 +6,7 @@ interface GetDocumentiParams {
   contratto_id?: number;
   tipo_documento?: string;
   unassigned?: boolean;
+  is_contratto?: boolean;
   search?: string;
   skip?: number;
   limit?: number;
@@ -21,8 +22,16 @@ export const getDocumento = async (id: number): Promise<Documento> => {
   return response.data;
 };
 
-export const uploadDocumento = async (data: FormData): Promise<Documento> => {
+export const uploadDocumento = async (data: FormData, isContratto = false): Promise<Documento> => {
+  if (isContratto) {
+    data.append('is_contratto', 'true');
+  }
   const response = await api.post('/documenti/upload', data);
+  return response.data;
+};
+
+export const getContrattiDocumenti = async (params?: GetDocumentiParams): Promise<Documento[]> => {
+  const response = await api.get('/documenti', { params: { ...params, is_contratto: true } });
   return response.data;
 };
 

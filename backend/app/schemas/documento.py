@@ -65,6 +65,7 @@ class DocumentoOut(BaseModel):
     classificazione_ai: Optional[Any] = None
     confidence_score: Optional[float] = None
     verificato_da_utente: bool
+    is_contratto: bool = False
     note: Optional[str] = None
     created_at: datetime
     updated_at: datetime

@@ -58,11 +58,12 @@ export function DocumentiPage() {
     try {
       setLoading(true);
       setError(null);
-      const params: { cliente_id?: number; contratto_id?: number; tipo_documento?: string; unassigned?: boolean } = {};
+      const params: { cliente_id?: number; contratto_id?: number; tipo_documento?: string; unassigned?: boolean; is_contratto?: boolean } = {};
       if (clienteFilter) params.cliente_id = parseInt(clienteFilter);
       if (contrattoFilter) params.contratto_id = parseInt(contrattoFilter);
       if (tipoFilter) params.tipo_documento = tipoFilter;
       if (unassignedFilter) params.unassigned = true;
+      params.is_contratto = false;
 
       const data = await getDocumenti(params);
       setDocumenti(data);

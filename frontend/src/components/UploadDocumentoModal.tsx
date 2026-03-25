@@ -13,6 +13,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (doc: Documento) => void;
+  isContratto?: boolean;
 }
 
 const EMPTY_FORM = {
@@ -22,7 +23,7 @@ const EMPTY_FORM = {
   note: '',
 };
 
-export function UploadDocumentoModal({ isOpen, onClose, onSuccess }: Props) {
+export function UploadDocumentoModal({ isOpen, onClose, onSuccess, isContratto = false }: Props) {
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [file, setFile] = useState<File | null>(null);
   const [clienti, setClienti] = useState<Cliente[]>([]);
@@ -85,7 +86,7 @@ export function UploadDocumentoModal({ isOpen, onClose, onSuccess }: Props) {
       if (formData.note.trim()) fd.append('note', formData.note.trim());
       fd.append('file', file);
 
-      const newDoc = await uploadDocumento(fd);
+      const newDoc = await uploadDocumento(fd, isContratto);
       onSuccess(newDoc);
     } catch (err) {
       if (err instanceof AxiosError) {

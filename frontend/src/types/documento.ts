@@ -25,6 +25,7 @@ interface Documento {
   macro_categoria?: 'fiscale' | 'lavoro' | 'amministrazione' | 'altro';
   anno_competenza?: number | null;
   verificato_da_utente: boolean;
+  is_contratto: boolean;
   note: string | null;
   created_at: string;
   updated_at: string;

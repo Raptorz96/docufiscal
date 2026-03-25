@@ -18,6 +18,7 @@ class ScadenzaDashboardOut(BaseModel):
     preavviso_disdetta: str | None
     confidence_score: float
     verificato: bool
+    is_contratto: bool = False
 
 
 class DocumentoRecenteOut(BaseModel):
