@@ -47,6 +47,24 @@ function scadenzaBadgeLabel(giorni: number | null): string {
   return `Tra ${giorni} giorni`;
 }
 
+function tipoBadge(tipo: string): { label: string; className: string } {
+  switch (tipo) {
+    case 'pagamento':
+      return { label: 'Pagamento', className: 'bg-red-100 text-red-700 ring-1 ring-red-200' };
+    case 'incasso':
+      return { label: 'Incasso', className: 'bg-green-100 text-green-700 ring-1 ring-green-200' };
+    case 'canone':
+    case 'contratto':
+      return { label: 'Canone', className: 'bg-blue-100 text-blue-700 ring-1 ring-blue-200' };
+    case 'adempimento':
+      return { label: 'Adempimento', className: 'bg-purple-100 text-purple-700 ring-1 ring-purple-200' };
+    case 'rinnovo':
+      return { label: 'Rinnovo', className: 'bg-orange-100 text-orange-700 ring-1 ring-orange-200' };
+    default:
+      return { label: 'Scadenza', className: 'bg-gray-100 text-gray-600' };
+  }
+}
+
 function ScadenzaCard({ s, googleConnected }: { s: ScadenzaDashboard; googleConnected: boolean }) {
   const navigate = useNavigate();
   const giorni = s.giorni_rimanenti;
@@ -84,6 +102,12 @@ function ScadenzaCard({ s, googleConnected }: { s: ScadenzaDashboard; googleConn
           <p className="text-xs text-gray-400 truncate mt-0.5" title={s.file_name}>
             {s.file_name.length > 40 ? s.file_name.slice(0, 40) + '…' : s.file_name}
           </p>
+          <span className={`mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${tipoBadge(s.tipo_scadenza).className}`}>
+            {tipoBadge(s.tipo_scadenza).label}
+          </span>
+          {s.descrizione && (
+            <p className="text-xs text-gray-500 mt-1 leading-snug">{s.descrizione}</p>
+          )}
         </div>
         {!s.verificato && (
           <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-600 ring-1 ring-amber-200">
@@ -277,8 +301,8 @@ const DashboardPage: React.FC = () => {
               <CalendarIcon className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Scadenze Contratti (AI)</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Estratte automaticamente dai PDF caricati</p>
+              <h2 className="text-xl font-bold text-gray-900">Scadenze (AI)</h2>
+              <p className="text-xs text-gray-400 mt-0.5">Estratte automaticamente da documenti e contratti</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

@@ -4,6 +4,8 @@ export interface ScadenzaDashboard {
     cliente_id: number;
     cliente_nome: string;
     file_name: string;
+    tipo_scadenza: string;
+    descrizione: string | null;
     data_scadenza: string | null;
     giorni_rimanenti: number | null;
     canone: string | null;
