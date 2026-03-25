@@ -9,6 +9,7 @@ import { ClientiPage } from './pages/ClientiPage';
 import { ContrattiPage } from './pages/ContrattiPage';
 import { DocumentiPage } from './pages/DocumentiPage';
 import ProfilePage from './pages/ProfilePage';
+import ScadenzePage from './pages/ScadenzePage';
 import { DocumentProvider } from './context/DocumentContext';
 import './App.css';
 
@@ -28,6 +29,7 @@ function App() {
               }
             >
               <Route path="/" element={<DashboardPage />} />
+              <Route path="/scadenze" element={<ScadenzePage />} />
               <Route path="/clienti" element={<ClientiPage />} />
               <Route path="/contratti" element={<ContrattiPage />} />
               <Route path="/documenti" element={<DocumentiPage />} />

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth_router, clienti_router, tipi_contratto_router, contratti_router, documenti_router, dashboard_router, search_router, chat_router
+from app.api import auth_router, clienti_router, tipi_contratto_router, contratti_router, documenti_router, dashboard_router, search_router, chat_router, scadenze_router
 from app.api.google_auth import router as google_router
 from app.api.google_calendar import router as calendar_router
 
@@ -29,6 +29,7 @@ app.include_router(documenti_router, prefix="/api/v1")
 app.include_router(dashboard_router, prefix="/api/v1")
 app.include_router(search_router, prefix="/api/v1")
 app.include_router(chat_router, prefix="/api/v1")
+app.include_router(scadenze_router, prefix="/api/v1")
 app.include_router(google_router, prefix="/api/v1")
 app.include_router(calendar_router, prefix="/api/v1")
 

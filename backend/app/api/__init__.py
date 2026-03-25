@@ -6,6 +6,7 @@ from .documenti import router as documenti_router
 from .dashboard import router as dashboard_router
 from .search import router as search_router
 from .chat import router as chat_router
+from .scadenze import router as scadenze_router
 
 __all__ = [
     "auth_router",
@@ -16,4 +17,5 @@ __all__ = [
     "dashboard_router",
     "search_router",
     "chat_router",
+    "scadenze_router",
 ]

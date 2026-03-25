@@ -53,6 +53,8 @@ _SCADENZA_KEYWORDS = {
     "disdetta", "preavviso", "canone", "affitto",
     "locazione", "clausola", "clausole", "decorrenza",
     "durata", "parti", "contraenti",
+    "pagamento", "incasso", "fattura", "f24",
+    "tributo", "bolletta", "adempimento", "tassa", "imposta",
 }
 
 
@@ -100,6 +102,10 @@ def _get_scadenze_context(db: Session) -> str:
         doc_label = file_name if file_name else "Contratto manuale"
         doc_ref = f"Doc ID: {sc.documento_id}" if sc.documento_id else f"Contratto ID: {sc.contratto_id}"
         parts = [f"- [Scadenza ID: {sc.id}] Cliente: {cliente_full} | Documento: {doc_label} ({doc_ref})"]
+        if sc.tipo_scadenza:
+            parts.append(f"  Tipo: {sc.tipo_scadenza}")
+        if sc.descrizione:
+            parts.append(f"  Descrizione: {sc.descrizione}")
         if sc.data_inizio:
             parts.append(f"  Inizio: {sc.data_inizio}")
         if sc.data_scadenza:
