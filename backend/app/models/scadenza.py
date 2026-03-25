@@ -1,18 +1,18 @@
-"""ScadenzaContratto model — structured data extracted from contract documents."""
+"""Scadenza model — deadline extracted from any document or manual contract."""
 from datetime import date, datetime
 from typing import Any, Optional
 
-from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Integer, JSON, String
+from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.core.database import Base
 
 
-class ScadenzaContratto(Base):
-    """Structured data extracted by AI from a contract document."""
+class Scadenza(Base):
+    """Deadline extracted by AI from any document, or from a manual contract."""
 
-    __tablename__ = "scadenze_contratto"
+    __tablename__ = "scadenze"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
@@ -36,6 +36,15 @@ class ScadenzaContratto(Base):
         nullable=False,
     )
 
+    tipo_scadenza: Mapped[str] = mapped_column(
+        String(50), nullable=False, server_default="contratto",
+        doc="Tipo: pagamento, incasso, canone, adempimento, rinnovo, generico, contratto"
+    )
+    descrizione: Mapped[Optional[str]] = mapped_column(
+        Text, nullable=True,
+        doc="AI-generated description of the deadline"
+    )
+
     data_inizio: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     data_scadenza: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     durata: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
@@ -45,9 +54,7 @@ class ScadenzaContratto(Base):
     parti_coinvolte: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     clausole_chiave: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
 
-    confidence_score: Mapped[float] = mapped_column(
-        Float, nullable=False, default=0.0
-    )
+    confidence_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     verificato: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     created_at: Mapped[datetime] = mapped_column(

@@ -17,10 +17,10 @@ router = APIRouter(prefix="/contratti", tags=["contratti"])
 
 def _upsert_scadenza_from_contratto(db: Session, contratto: Contratto) -> None:
     """Auto-create/update a scadenza_contratto record from a manual contract."""
-    from app.models.scadenza_contratto import ScadenzaContratto
+    from app.models.scadenza import Scadenza
 
-    existing = db.query(ScadenzaContratto).filter(
-        ScadenzaContratto.contratto_id == contratto.id
+    existing = db.query(Scadenza).filter(
+        Scadenza.contratto_id == contratto.id
     ).first()
 
     if contratto.data_fine is None:
@@ -32,13 +32,15 @@ def _upsert_scadenza_from_contratto(db: Session, contratto: Contratto) -> None:
     if existing:
         existing.data_inizio = contratto.data_inizio
         existing.data_scadenza = contratto.data_fine
+        existing.tipo_scadenza = "canone"
         existing.confidence_score = 1.0
         existing.verificato = True
     else:
-        scadenza = ScadenzaContratto(
+        scadenza = Scadenza(
             contratto_id=contratto.id,
             cliente_id=contratto.cliente_id,
             documento_id=None,
+            tipo_scadenza="canone",
             data_inizio=contratto.data_inizio,
             data_scadenza=contratto.data_fine,
             confidence_score=1.0,

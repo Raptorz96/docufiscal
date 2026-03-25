@@ -6,7 +6,7 @@ from app.core.database import get_db
 from app.models.cliente import Cliente
 from app.models.contratto import Contratto
 from app.models.documento import Documento
-from app.models.scadenza_contratto import ScadenzaContratto
+from app.models.scadenza import Scadenza
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.schemas.dashboard import ScadenzaDashboardOut, DashboardStats, DocumentoRecenteOut
@@ -37,55 +37,55 @@ def get_dashboard_stats(
     )
 
     scadenze_scadute = (
-        db.query(ScadenzaContratto)
+        db.query(Scadenza)
         .filter(
-            ScadenzaContratto.data_scadenza.isnot(None),
-            ScadenzaContratto.data_scadenza < today,
+            Scadenza.data_scadenza.isnot(None),
+            Scadenza.data_scadenza < today,
         )
         .count()
     )
 
     scadenze_in_scadenza = (
-        db.query(ScadenzaContratto)
+        db.query(Scadenza)
         .filter(
-            ScadenzaContratto.data_scadenza.isnot(None),
-            ScadenzaContratto.data_scadenza >= today,
-            ScadenzaContratto.data_scadenza <= thirty_days_later,
+            Scadenza.data_scadenza.isnot(None),
+            Scadenza.data_scadenza >= today,
+            Scadenza.data_scadenza <= thirty_days_later,
         )
         .count()
     )
 
     critiche_rows = (
         db.query(
-            ScadenzaContratto.id,
-            ScadenzaContratto.documento_id,
-            ScadenzaContratto.contratto_id,
-            ScadenzaContratto.cliente_id,
+            Scadenza.id,
+            Scadenza.documento_id,
+            Scadenza.contratto_id,
+            Scadenza.cliente_id,
             Cliente.nome.label("cliente_nome"),
             Cliente.cognome.label("cliente_cognome"),
             Documento.file_name,
             Documento.is_contratto,
-            ScadenzaContratto.data_scadenza,
-            ScadenzaContratto.canone,
-            ScadenzaContratto.rinnovo_automatico,
-            ScadenzaContratto.preavviso_disdetta,
-            ScadenzaContratto.confidence_score,
-            ScadenzaContratto.verificato,
+            Scadenza.data_scadenza,
+            Scadenza.canone,
+            Scadenza.rinnovo_automatico,
+            Scadenza.preavviso_disdetta,
+            Scadenza.confidence_score,
+            Scadenza.verificato,
         )
-        .join(Cliente, ScadenzaContratto.cliente_id == Cliente.id)
-        .outerjoin(Documento, ScadenzaContratto.documento_id == Documento.id)
-        .outerjoin(Contratto, ScadenzaContratto.contratto_id == Contratto.id)
+        .join(Cliente, Scadenza.cliente_id == Cliente.id)
+        .outerjoin(Documento, Scadenza.documento_id == Documento.id)
+        .outerjoin(Contratto, Scadenza.contratto_id == Contratto.id)
         .filter(
-            ScadenzaContratto.data_scadenza.isnot(None),
+            Scadenza.data_scadenza.isnot(None),
             or_(
-                ScadenzaContratto.data_scadenza < today,
+                Scadenza.data_scadenza < today,
                 and_(
-                    ScadenzaContratto.data_scadenza >= today,
-                    ScadenzaContratto.data_scadenza <= thirty_days_later,
+                    Scadenza.data_scadenza >= today,
+                    Scadenza.data_scadenza <= thirty_days_later,
                 ),
             ),
         )
-        .order_by(ScadenzaContratto.data_scadenza.asc())
+        .order_by(Scadenza.data_scadenza.asc())
         .all()
     )
 
@@ -167,30 +167,30 @@ def get_upcoming_deadlines(
 
     rows = (
         db.query(
-            ScadenzaContratto.id,
-            ScadenzaContratto.documento_id,
-            ScadenzaContratto.contratto_id,
-            ScadenzaContratto.cliente_id,
+            Scadenza.id,
+            Scadenza.documento_id,
+            Scadenza.contratto_id,
+            Scadenza.cliente_id,
             Cliente.nome.label("cliente_nome"),
             Cliente.cognome.label("cliente_cognome"),
             Documento.file_name,
             Documento.is_contratto,
-            ScadenzaContratto.data_scadenza,
-            ScadenzaContratto.canone,
-            ScadenzaContratto.rinnovo_automatico,
-            ScadenzaContratto.preavviso_disdetta,
-            ScadenzaContratto.confidence_score,
-            ScadenzaContratto.verificato,
+            Scadenza.data_scadenza,
+            Scadenza.canone,
+            Scadenza.rinnovo_automatico,
+            Scadenza.preavviso_disdetta,
+            Scadenza.confidence_score,
+            Scadenza.verificato,
         )
-        .join(Cliente, ScadenzaContratto.cliente_id == Cliente.id)
-        .outerjoin(Documento, ScadenzaContratto.documento_id == Documento.id)
-        .outerjoin(Contratto, ScadenzaContratto.contratto_id == Contratto.id)
+        .join(Cliente, Scadenza.cliente_id == Cliente.id)
+        .outerjoin(Documento, Scadenza.documento_id == Documento.id)
+        .outerjoin(Contratto, Scadenza.contratto_id == Contratto.id)
         .filter(
-            ScadenzaContratto.data_scadenza.isnot(None),
-            ScadenzaContratto.data_scadenza >= today,
-            ScadenzaContratto.data_scadenza <= thirty_days_later,
+            Scadenza.data_scadenza.isnot(None),
+            Scadenza.data_scadenza >= today,
+            Scadenza.data_scadenza <= thirty_days_later,
         )
-        .order_by(ScadenzaContratto.data_scadenza.asc())
+        .order_by(Scadenza.data_scadenza.asc())
         .all()
     )
 

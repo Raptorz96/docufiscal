@@ -264,12 +264,12 @@ async def upload_documento(
         if should_extract and documento.cliente_id is not None and extracted_text.strip():
             try:
                 from app.ai.contract_extractor import extract_contract_data
-                from app.models.scadenza_contratto import ScadenzaContratto
+                from app.models.scadenza import Scadenza
                 extraction = await anyio.to_thread.run_sync(
                     lambda: extract_contract_data(extracted_text)
                 )
                 if extraction.confidence > 0:
-                    scadenza = ScadenzaContratto(
+                    scadenza = Scadenza(
                         documento_id=documento.id,
                         cliente_id=documento.cliente_id,
                         data_inizio=extraction.data_inizio,

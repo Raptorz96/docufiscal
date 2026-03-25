@@ -191,8 +191,8 @@ class Documento(Base):
         doc="Relationship to the contract"
     )
 
-    scadenza_contratto: Mapped[Optional["ScadenzaContratto"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
-        "ScadenzaContratto",
+    scadenza_contratto: Mapped[Optional["Scadenza"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
+        "Scadenza",
         back_populates="documento",
         uselist=False,
         cascade="all, delete-orphan",

@@ -13,7 +13,7 @@ from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.models.user import User
 from app.models.google_token import GoogleToken
-from app.models.scadenza_contratto import ScadenzaContratto
+from app.models.scadenza import Scadenza
 from app.models.cliente import Cliente
 from app.models.contratto import Contratto
 from app.models.documento import Documento
@@ -79,15 +79,15 @@ def _get_scadenze_context(db: Session) -> str:
     """Query all scadenze_contratto and format as structured text for the LLM."""
     rows = (
         db.query(
-            ScadenzaContratto,
+            Scadenza,
             Cliente.nome.label("cliente_nome"),
             Cliente.cognome.label("cliente_cognome"),
             Documento.file_name,
         )
-        .join(Cliente, ScadenzaContratto.cliente_id == Cliente.id)
-        .outerjoin(Documento, ScadenzaContratto.documento_id == Documento.id)
-        .outerjoin(Contratto, ScadenzaContratto.contratto_id == Contratto.id)
-        .order_by(ScadenzaContratto.data_scadenza.asc().nullslast())
+        .join(Cliente, Scadenza.cliente_id == Cliente.id)
+        .outerjoin(Documento, Scadenza.documento_id == Documento.id)
+        .outerjoin(Contratto, Scadenza.contratto_id == Contratto.id)
+        .order_by(Scadenza.data_scadenza.asc().nullslast())
         .all()
     )
 
@@ -130,7 +130,7 @@ def _execute_calendar_action(db: Session, user_id: int, action: dict) -> dict | 
         if not scadenza_id:
             return None
 
-        scadenza = db.query(ScadenzaContratto).filter(ScadenzaContratto.id == scadenza_id).first()
+        scadenza = db.query(Scadenza).filter(Scadenza.id == scadenza_id).first()
         if not scadenza or not scadenza.data_scadenza:
             return {"success": False, "error": "Scadenza non trovata o senza data"}
 

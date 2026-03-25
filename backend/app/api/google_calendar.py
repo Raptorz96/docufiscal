@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.models.google_token import GoogleToken
-from app.models.scadenza_contratto import ScadenzaContratto
+from app.models.scadenza import Scadenza
 from app.models.cliente import Cliente
 from app.models.documento import Documento
 from app.models.user import User
@@ -70,7 +70,7 @@ def create_event_from_scadenza(
     """Create a calendar event from an AI-extracted contract deadline."""
     _require_google_connected(db, current_user.id)
 
-    scadenza = db.query(ScadenzaContratto).filter(ScadenzaContratto.id == payload.scadenza_id).first()
+    scadenza = db.query(Scadenza).filter(Scadenza.id == payload.scadenza_id).first()
     if not scadenza:
         raise HTTPException(status_code=404, detail="Scadenza non trovata")
 

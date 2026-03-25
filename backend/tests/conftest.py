@@ -19,7 +19,7 @@ from app.models.cliente import Cliente
 from app.models.contratto import Contratto          # noqa: F401 — registers table
 from app.models.tipo_contratto import TipoContratto  # noqa: F401 — registers table
 from app.models.documento import Documento, TipoDocumento
-from app.models.scadenza_contratto import ScadenzaContratto  # noqa: F401 — registers table
+from app.models.scadenza import Scadenza  # noqa: F401 — registers table
 
 # ---------------------------------------------------------------------------
 # In-memory SQLite engine with StaticPool:
