@@ -15,6 +15,38 @@ from app.schemas.contratto import ContrattoCreate, ContrattoUpdate, ContrattoRes
 router = APIRouter(prefix="/contratti", tags=["contratti"])
 
 
+def _upsert_scadenza_from_contratto(db: Session, contratto: Contratto) -> None:
+    """Auto-create/update a scadenza_contratto record from a manual contract."""
+    from app.models.scadenza_contratto import ScadenzaContratto
+
+    existing = db.query(ScadenzaContratto).filter(
+        ScadenzaContratto.contratto_id == contratto.id
+    ).first()
+
+    if contratto.data_fine is None:
+        # Nessuna data_fine → rimuovi scadenza se esisteva
+        if existing:
+            db.delete(existing)
+        return
+
+    if existing:
+        existing.data_inizio = contratto.data_inizio
+        existing.data_scadenza = contratto.data_fine
+        existing.confidence_score = 1.0
+        existing.verificato = True
+    else:
+        scadenza = ScadenzaContratto(
+            contratto_id=contratto.id,
+            cliente_id=contratto.cliente_id,
+            documento_id=None,
+            data_inizio=contratto.data_inizio,
+            data_scadenza=contratto.data_fine,
+            confidence_score=1.0,
+            verificato=True,
+        )
+        db.add(scadenza)
+
+
 @router.get("", response_model=List[ContrattoResponse])
 def list_contratti(
     db: Session = Depends(get_db),
@@ -127,6 +159,9 @@ def create_contratto(
     db.commit()
     db.refresh(db_contratto)
 
+    _upsert_scadenza_from_contratto(db, db_contratto)
+    db.commit()
+
     return ContrattoResponse.model_validate(db_contratto)
 
 
@@ -186,6 +221,9 @@ def update_contratto(
 
     db.commit()
     db.refresh(contratto)
+
+    _upsert_scadenza_from_contratto(db, contratto)
+    db.commit()
 
     return ContrattoResponse.model_validate(contratto)
 

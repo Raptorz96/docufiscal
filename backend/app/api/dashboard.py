@@ -59,6 +59,7 @@ def get_dashboard_stats(
         db.query(
             ScadenzaContratto.id,
             ScadenzaContratto.documento_id,
+            ScadenzaContratto.contratto_id,
             ScadenzaContratto.cliente_id,
             Cliente.nome.label("cliente_nome"),
             Cliente.cognome.label("cliente_cognome"),
@@ -71,7 +72,8 @@ def get_dashboard_stats(
             ScadenzaContratto.verificato,
         )
         .join(Cliente, ScadenzaContratto.cliente_id == Cliente.id)
-        .join(Documento, ScadenzaContratto.documento_id == Documento.id)
+        .outerjoin(Documento, ScadenzaContratto.documento_id == Documento.id)
+        .outerjoin(Contratto, ScadenzaContratto.contratto_id == Contratto.id)
         .filter(
             ScadenzaContratto.data_scadenza.isnot(None),
             or_(
@@ -90,9 +92,10 @@ def get_dashboard_stats(
         ScadenzaDashboardOut(
             id=r.id,
             documento_id=r.documento_id,
+            contratto_id=r.contratto_id,
             cliente_id=r.cliente_id,
             cliente_nome=f"{r.cliente_nome} {r.cliente_cognome}".strip() if r.cliente_nome else "Non assegnato",
-            file_name=r.file_name,
+            file_name=r.file_name if r.file_name else "Contratto manuale",
             data_scadenza=r.data_scadenza,
             giorni_rimanenti=(r.data_scadenza - today).days,
             canone=r.canone,
@@ -164,6 +167,7 @@ def get_upcoming_deadlines(
         db.query(
             ScadenzaContratto.id,
             ScadenzaContratto.documento_id,
+            ScadenzaContratto.contratto_id,
             ScadenzaContratto.cliente_id,
             Cliente.nome.label("cliente_nome"),
             Cliente.cognome.label("cliente_cognome"),
@@ -176,7 +180,8 @@ def get_upcoming_deadlines(
             ScadenzaContratto.verificato,
         )
         .join(Cliente, ScadenzaContratto.cliente_id == Cliente.id)
-        .join(Documento, ScadenzaContratto.documento_id == Documento.id)
+        .outerjoin(Documento, ScadenzaContratto.documento_id == Documento.id)
+        .outerjoin(Contratto, ScadenzaContratto.contratto_id == Contratto.id)
         .filter(
             ScadenzaContratto.data_scadenza.isnot(None),
             ScadenzaContratto.data_scadenza >= today,
@@ -190,9 +195,10 @@ def get_upcoming_deadlines(
         ScadenzaDashboardOut(
             id=r.id,
             documento_id=r.documento_id,
+            contratto_id=r.contratto_id,
             cliente_id=r.cliente_id,
             cliente_nome=f"{r.cliente_nome} {r.cliente_cognome}".strip() if r.cliente_nome else "Non assegnato",
-            file_name=r.file_name,
+            file_name=r.file_name if r.file_name else "Contratto manuale",
             data_scadenza=r.data_scadenza,
             giorni_rimanenti=(r.data_scadenza - today).days,
             canone=r.canone,

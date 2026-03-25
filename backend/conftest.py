@@ -52,6 +52,31 @@ except (ImportError, AttributeError):
         genai_mock = _stub("google.genai")
         sys.modules["google"].genai = genai_mock  # type: ignore[attr-defined]
 
+# google.auth / google.oauth2 / googleapiclient (google_calendar service)
+try:
+    from google.auth.transport.requests import Request  # noqa: F401
+except (ImportError, AttributeError):
+    google_mod = sys.modules.get("google") or _stub("google")
+    _stub("google.auth")
+    _stub("google.auth.transport")
+    _stub("google.auth.transport.requests")
+    _stub("google.oauth2")
+    _stub("google.oauth2.credentials")
+    google_mod.auth = sys.modules["google.auth"]  # type: ignore[attr-defined]
+    google_mod.oauth2 = sys.modules["google.oauth2"]  # type: ignore[attr-defined]
+
+try:
+    from googleapiclient.discovery import build  # noqa: F401
+except ImportError:
+    _stub("googleapiclient")
+    _stub("googleapiclient.discovery")
+
+try:
+    from google_auth_oauthlib.flow import Flow  # noqa: F401
+except ImportError:
+    _stub("google_auth_oauthlib")
+    _stub("google_auth_oauthlib.flow")
+
 # openai / anthropic (lazily imported classifiers — stub just in case)
 try:
     import openai  # noqa: F401

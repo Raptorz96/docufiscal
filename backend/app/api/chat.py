@@ -15,6 +15,7 @@ from app.models.user import User
 from app.models.google_token import GoogleToken
 from app.models.scadenza_contratto import ScadenzaContratto
 from app.models.cliente import Cliente
+from app.models.contratto import Contratto
 from app.models.documento import Documento
 from app.core.config import settings
 from app.services.google_calendar import create_calendar_event
@@ -84,7 +85,8 @@ def _get_scadenze_context(db: Session) -> str:
             Documento.file_name,
         )
         .join(Cliente, ScadenzaContratto.cliente_id == Cliente.id)
-        .join(Documento, ScadenzaContratto.documento_id == Documento.id)
+        .outerjoin(Documento, ScadenzaContratto.documento_id == Documento.id)
+        .outerjoin(Contratto, ScadenzaContratto.contratto_id == Contratto.id)
         .order_by(ScadenzaContratto.data_scadenza.asc().nullslast())
         .all()
     )
@@ -95,7 +97,9 @@ def _get_scadenze_context(db: Session) -> str:
     lines = []
     for sc, nome, cognome, file_name in rows:
         cliente_full = f"{nome} {cognome}".strip() if nome else "Sconosciuto"
-        parts = [f"- [Scadenza ID: {sc.id}] Cliente: {cliente_full} | Documento: {file_name} (Doc ID: {sc.documento_id})"]
+        doc_label = file_name if file_name else "Contratto manuale"
+        doc_ref = f"Doc ID: {sc.documento_id}" if sc.documento_id else f"Contratto ID: {sc.contratto_id}"
+        parts = [f"- [Scadenza ID: {sc.id}] Cliente: {cliente_full} | Documento: {doc_label} ({doc_ref})"]
         if sc.data_inizio:
             parts.append(f"  Inizio: {sc.data_inizio}")
         if sc.data_scadenza:

@@ -16,11 +16,18 @@ class ScadenzaContratto(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
-    documento_id: Mapped[int] = mapped_column(
+    documento_id: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey("documenti.id", ondelete="CASCADE"),
         unique=True,
-        nullable=False,
+        nullable=True,
+    )
+
+    contratto_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("contratti.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=True,
     )
 
     cliente_id: Mapped[int] = mapped_column(
@@ -54,7 +61,8 @@ class ScadenzaContratto(Base):
     )
 
     # Relationships
-    documento: Mapped["Documento"] = relationship(  # type: ignore[name-defined]  # noqa: F821
+    documento: Mapped[Optional["Documento"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
         "Documento", back_populates="scadenza_contratto"
     )
+    contratto: Mapped[Optional["Contratto"]] = relationship("Contratto")  # type: ignore[name-defined]  # noqa: F821
     cliente: Mapped["Cliente"] = relationship("Cliente")  # type: ignore[name-defined]  # noqa: F821

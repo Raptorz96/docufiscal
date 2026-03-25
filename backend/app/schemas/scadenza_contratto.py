@@ -7,7 +7,8 @@ class ScadenzaContrattoResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    documento_id: int
+    documento_id: int | None = None
+    contratto_id: int | None = None
     cliente_id: int
     data_inizio: date | None = None
     data_scadenza: date | None = None

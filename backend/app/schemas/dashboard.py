@@ -6,10 +6,11 @@ from pydantic import BaseModel
 
 class ScadenzaDashboardOut(BaseModel):
     id: int  # scadenze_contratto.id
-    documento_id: int
+    documento_id: int | None = None
+    contratto_id: int | None = None
     cliente_id: int
     cliente_nome: str
-    file_name: str  # nome del PDF contratto
+    file_name: str = "Contratto manuale"  # nome del PDF contratto o fallback
     data_scadenza: date | None
     giorni_rimanenti: int | None
     canone: str | None
