@@ -44,3 +44,6 @@ backend/.env.*
 
 # Test cache
 .pytest_cache/
+
+# Git worktrees
+.worktrees/
