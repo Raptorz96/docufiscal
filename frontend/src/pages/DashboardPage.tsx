@@ -94,13 +94,13 @@ function ScadenzaCard({ s, googleConnected }: { s: ScadenzaDashboard; googleConn
   return (
     <div
       onClick={() => navigate(`/documenti?cliente_id=${s.cliente_id}`)}
-      className={`bg-white rounded-xl border ${borderColor} p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col gap-3`}
+      className={`bg-white dark:bg-gray-800 rounded-xl border ${borderColor} p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col gap-3`}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-sm font-bold text-gray-900 truncate">{s.cliente_nome}</p>
-          <p className="text-xs text-gray-400 truncate mt-0.5" title={s.file_name}>
+          <p className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">{s.cliente_nome}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5" title={s.file_name}>
             {s.file_name.length > 40 ? s.file_name.slice(0, 40) + '…' : s.file_name}
           </p>
           <span className={`mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${tipoBadge(s.tipo_scadenza).className}`}>
@@ -119,7 +119,7 @@ function ScadenzaCard({ s, googleConnected }: { s: ScadenzaDashboard; googleConn
 
       {/* Data scadenza + badge giorni */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-sm text-gray-500">
+        <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
           <CalendarIcon className="w-4 h-4 shrink-0" />
           {s.data_scadenza
             ? new Date(s.data_scadenza).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -161,7 +161,7 @@ function ScadenzaCard({ s, googleConnected }: { s: ScadenzaDashboard; googleConn
 
       {/* Google Calendar button */}
       {googleConnected && s.data_scadenza && (
-        <div className="pt-2 mt-auto border-t border-gray-100">
+        <div className="pt-2 mt-auto border-t border-gray-100 dark:border-gray-700">
           {calResult === 'success' ? (
             <span className="text-xs text-green-600 font-medium">✓ Aggiunto al calendario</span>
           ) : (
@@ -255,8 +255,8 @@ const DashboardPage: React.FC = () => {
   return (
     <div className="p-8 space-y-8 max-w-7xl mx-auto">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Panoramica Generale</h1>
-        <p className="text-gray-500 mt-2">Benvenuto in DocuFiscal. Ecco un riepilogo delle tue attività.</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Panoramica Generale</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-2">Benvenuto in DocuFiscal. Ecco un riepilogo delle tue attività.</p>
       </div>
 
       {/* Cards */}
@@ -264,7 +264,7 @@ const DashboardPage: React.FC = () => {
         {cards.map((card) => (
           <div
             key={card.title}
-            className={`relative group bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition-all duration-300 ${card.urgent ? 'ring-1 ring-amber-200' : ''}`}
+            className={`relative group bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-all duration-300 ${card.urgent ? 'ring-1 ring-amber-200' : ''}`}
           >
             <div className="flex items-start justify-between">
               <div className={`p-3 rounded-xl ${card.color}`}>
@@ -279,8 +279,8 @@ const DashboardPage: React.FC = () => {
             </div>
 
             <div className="mt-4">
-              <p className="text-sm font-medium text-gray-500">{card.title}</p>
-              <h2 className="text-4xl font-bold text-gray-900 mt-1">{card.value}</h2>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{card.title}</p>
+              <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mt-1">{card.value}</h2>
             </div>
 
             <Link
@@ -295,15 +295,15 @@ const DashboardPage: React.FC = () => {
       </div>
 
       {/* Sezione Scadenze Contratti (AI) */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-50 dark:border-gray-700 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
               <CalendarIcon className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Scadenze (AI)</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Estratte automaticamente da documenti e contratti</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Scadenze (AI)</h2>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Estratte automaticamente da documenti e contratti</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -346,13 +346,13 @@ const DashboardPage: React.FC = () => {
       </div>
 
       {/* Sezione Ultimi Documenti */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-50 dark:border-gray-700 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-green-50 text-green-600 rounded-lg">
               <FileTextIcon className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Ultimi Documenti Caricati</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Ultimi Documenti Caricati</h2>
           </div>
           <Link
             to="/documenti"
@@ -367,7 +367,7 @@ const DashboardPage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-gray-50/50 text-gray-400 text-[10px] uppercase font-bold tracking-widest">
+                <tr className="bg-gray-50/50 dark:bg-gray-700/50 text-gray-400 dark:text-gray-500 text-[10px] uppercase font-bold tracking-widest">
                   <th className="px-6 py-4">File</th>
                   <th className="px-6 py-4">Tipo</th>
                   <th className="px-6 py-4">Cliente</th>
@@ -377,17 +377,17 @@ const DashboardPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {ultimi.map((doc) => (
-                  <tr key={doc.id} className="hover:bg-green-50/20 transition-colors">
+                  <tr key={doc.id} className="hover:bg-green-50/20 dark:hover:bg-gray-700/30 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900 max-w-xs truncate">{doc.file_name}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100 max-w-xs truncate">{doc.file_name}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-600">{doc.tipo_documento}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">{doc.tipo_documento}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-600">{doc.cliente_nome}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">{doc.cliente_nome}</div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                       {new Date(doc.created_at).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </td>
                     <td className="px-6 py-4">
