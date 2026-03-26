@@ -171,7 +171,7 @@ export function ContrattiPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
       </div>
     );
@@ -179,7 +179,7 @@ export function ContrattiPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
           <button
@@ -194,23 +194,23 @@ export function ContrattiPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {uploadBanner && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-800">
+          <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md text-sm text-green-800 dark:text-green-300">
             {uploadBanner}
           </div>
         )}
 
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
-            <h1 className="text-2xl font-semibold text-gray-900">Contratti</h1>
-            <p className="mt-2 text-sm text-gray-700">Gestione dei contratti</p>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Contratti</h1>
+            <p className="mt-2 text-sm text-gray-700 dark:text-gray-400">Gestione dei contratti</p>
           </div>
           <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex gap-2">
             <button
               onClick={() => setIsUploadOpen(true)}
-              className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+              className="inline-flex items-center justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
             >
               Carica Contratto PDF
             </button>
@@ -223,15 +223,15 @@ export function ContrattiPage() {
           </div>
         </div>
 
-        <div className="mt-6 bg-white shadow-sm rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="mt-6 bg-white dark:bg-gray-800 shadow-sm rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cliente</label>
                 <select
                   value={clienteFilter}
                   onChange={(e) => setClienteFilter(e.target.value)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 >
                   <option value="">Tutti</option>
                   {clienti.map((cliente) => (
@@ -242,11 +242,11 @@ export function ContrattiPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo Contratto</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo Contratto</label>
                 <select
                   value={tipoContrattoFilter}
                   onChange={(e) => setTipoContrattoFilter(e.target.value)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 >
                   <option value="">Tutti</option>
                   {tipiContratto.map((tipo) => (
@@ -257,11 +257,11 @@ export function ContrattiPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Stato</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stato</label>
                 <select
                   value={statoFilter}
                   onChange={(e) => setStatoFilter(e.target.value)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 >
                   <option value="">Tutti</option>
                   <option value="attivo">Attivo</option>
@@ -279,47 +279,47 @@ export function ContrattiPage() {
           ) : (
             <div className="overflow-hidden">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Cliente
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Tipo Contratto
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Data Inizio
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Data Fine
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Stato
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Azioni
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {contratti.map((contratto) => (
                     <tr key={contratto.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                         {clientiMap.current.get(contratto.cliente_id) || 'Cliente sconosciuto'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {tipiContrattoMap.current.get(contratto.tipo_contratto_id) || 'Tipo sconosciuto'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {formatDate(contratto.data_inizio)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {formatDate(contratto.data_fine)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getStatoBadge(contratto.stato)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleEditClick(contratto)}
@@ -347,8 +347,8 @@ export function ContrattiPage() {
       {/* PDF Contracts Section */}
       {contrattiDocumenti.length > 0 && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Contratti caricati (PDF)</h2>
-          <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Contratti caricati (PDF)</h2>
+          <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -361,9 +361,9 @@ export function ContrattiPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {contrattiDocumenti.map((doc) => (
                   <tr key={doc.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{doc.file_name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{doc.tipo_documento_raw || doc.tipo_documento}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{doc.file_name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{doc.tipo_documento_raw || doc.tipo_documento}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {new Date(doc.created_at).toLocaleDateString('it-IT')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
