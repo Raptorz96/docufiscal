@@ -308,7 +308,7 @@ export function DocumentiPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
       </div>
     );
@@ -316,7 +316,7 @@ export function DocumentiPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
           <button
@@ -339,7 +339,7 @@ export function DocumentiPage() {
   const isDrawerOpen = viewingDocument !== null;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       {/* When the drawer is open, we use a flex layout: table on the left, drawer on the right (fixed). */}
       <div
         className={`transition-all duration-300 px-4 sm:px-6 lg:px-8 w-full mx-auto ${isDrawerOpen ? 'md:mr-[45vw]' : ''}`}
@@ -347,8 +347,8 @@ export function DocumentiPage() {
         {/* Header */}
         <div className="sm:flex sm:items-center mb-6">
           <div className="sm:flex-auto">
-            <h1 className="text-2xl font-semibold text-gray-900">Documenti</h1>
-            <p className="mt-1 text-sm text-gray-700">Gestione avanzata dei documenti caricati</p>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Documenti</h1>
+            <p className="mt-1 text-sm text-gray-700 dark:text-gray-400">Gestione avanzata dei documenti caricati</p>
           </div>
           <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
             <button
@@ -361,12 +361,12 @@ export function DocumentiPage() {
         </div>
 
         {/* ─── Sticky Filter Panel ──────────────────────────────────────── */}
-        <div className="sticky top-0 z-20 bg-white shadow-md rounded-xl border border-gray-200 mb-4">
+        <div className="sticky top-0 z-20 bg-white dark:bg-gray-800 shadow-md rounded-xl border border-gray-200 dark:border-gray-700 mb-4">
           {/* Mobile toggle */}
           <button
             type="button"
             onClick={() => setFiltersOpen((v) => !v)}
-            className="md:hidden w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="md:hidden w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <span className="flex items-center gap-2">
               <svg className="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -391,11 +391,11 @@ export function DocumentiPage() {
           <div className={`${filtersOpen ? '' : 'hidden'} md:block`}>
 
           {/* Row 1 – Backend filters (trigger API) */}
-          <div className="px-6 pt-4 pb-3 border-b border-gray-100">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Filtri Backend</p>
+          <div className="px-6 pt-4 pb-3 border-b border-gray-100 dark:border-gray-700">
+            <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Filtri Backend</p>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Cliente</label>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Cliente</label>
                 <select
                   value={clienteFilter}
                   onChange={(e) => {
@@ -403,7 +403,7 @@ export function DocumentiPage() {
                     setContrattoFilter('');
                   }}
                   disabled={unassignedFilter}
-                  className="block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
                 >
                   <option value="">Tutti i clienti</option>
                   {clienti.map((c) => (
@@ -414,11 +414,11 @@ export function DocumentiPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Tipo Documento</label>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Tipo Documento</label>
                 <select
                   value={tipoFilter}
                   onChange={(e) => setTipoFilter(e.target.value)}
-                  className="block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 >
                   <option value="">Tutti i tipi</option>
                   {(Object.keys(TIPO_LABELS) as TipoDocumento[]).map((tipo) => (
@@ -427,12 +427,12 @@ export function DocumentiPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Contratto</label>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Contratto</label>
                 <select
                   value={contrattoFilter}
                   onChange={(e) => setContrattoFilter(e.target.value)}
                   disabled={unassignedFilter}
-                  className="block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
                 >
                   <option value="">Tutti i contratti</option>
                   {contrattiFiltered.map((c) => (
@@ -451,7 +451,7 @@ export function DocumentiPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 items-end">
               {/* Search */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Cerca (nome / note)</label>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Cerca (nome / note)</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 pointer-events-none">
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -470,11 +470,11 @@ export function DocumentiPage() {
 
               {/* Macro-Categoria dropdown */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Macro-Categoria</label>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Macro-Categoria</label>
                 <select
                   value={macroCategoriaFilter}
                   onChange={(e) => setMacroCategoriaFilter(e.target.value as MacroCategoria | '')}
-                  className="block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 >
                   <option value="">Tutte le categorie</option>
                   {(Object.keys(MACRO_CATEGORIA_LABELS) as MacroCategoria[]).map((key) => (
@@ -485,11 +485,11 @@ export function DocumentiPage() {
 
               {/* Anno dropdown */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Anno</label>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Anno</label>
                 <select
                   value={annoFilter}
                   onChange={(e) => setAnnoFilter(e.target.value)}
-                  className="block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 >
                   <option value="">Tutti gli anni</option>
                   {availableAnni.map((a) => (
@@ -658,7 +658,7 @@ export function DocumentiPage() {
         </div>
 
         {/* Table — desktop only */}
-        <div className="hidden md:block bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+        <div className="hidden md:block bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           {filteredDocumenti.length === 0 ? (
             <div className="text-center py-16">
               <svg className="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -674,29 +674,29 @@ export function DocumentiPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nome file</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tipo Documento</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Macro-Categoria</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Anno</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Classificazione AI</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Cliente</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Dimensione</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Data</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Azioni</th>
+                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nome file</th>
+                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tipo Documento</th>
+                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Macro-Categoria</th>
+                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Anno</th>
+                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Classificazione AI</th>
+                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Cliente</th>
+                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dimensione</th>
+                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Data</th>
+                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Azioni</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
                   {filteredDocumenti.map((doc) => {
                     const isUnassigned = doc.cliente_id === null;
                     return (
                       <tr
                         key={doc.id}
-                        className={`${isUnassigned ? 'bg-red-50/40 hover:bg-red-50' : 'hover:bg-gray-50/60'} transition-colors`}
+                        className={`${isUnassigned ? 'bg-red-50/40 hover:bg-red-50 dark:bg-red-900/10 dark:hover:bg-red-900/20' : 'hover:bg-gray-50/60 dark:hover:bg-gray-700/30'} transition-colors`}
                       >
                         {/* Nome file – click to open PDF drawer */}
-                        <td className="px-5 py-4 text-sm font-medium text-gray-900 max-w-xs" title={doc.file_name}>
+                        <td className="px-5 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 max-w-xs" title={doc.file_name}>
                           <button
                             onClick={() => setViewingDocument(doc)}
                             className={`text-left truncate block w-full hover:text-indigo-600 transition-colors ${viewingDocument?.id === doc.id ? 'text-indigo-600 font-semibold' : ''
@@ -720,7 +720,7 @@ export function DocumentiPage() {
                         </td>
 
                         {/* Anno (NEW separate column) */}
-                        <td className="px-5 py-4 whitespace-nowrap text-sm font-semibold text-gray-700">
+                        <td className="px-5 py-4 whitespace-nowrap text-sm font-semibold text-gray-700 dark:text-gray-300">
                           {doc.anno_competenza ?? <span className="text-gray-400 font-normal">—</span>}
                         </td>
 
@@ -736,19 +736,19 @@ export function DocumentiPage() {
                               Da Assegnare
                             </span>
                           ) : (
-                            <span className="text-sm text-gray-700 font-medium">
+                            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                               {clientiMap.current.get(doc.cliente_id!) ?? '—'}
                             </span>
                           )}
                         </td>
 
                         {/* Dimensione */}
-                        <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {formatFileSize(doc.file_size)}
                         </td>
 
                         {/* Data */}
-                        <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {formatDate(doc.created_at)}
                         </td>
 
