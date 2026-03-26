@@ -27,9 +27,9 @@ const GoogleCalendarBanner: React.FC<GoogleCalendarBannerProps> = ({ className }
   };
 
   return (
-    <div className={`bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-4 ${className ?? ''}`}>
+    <div className={`bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex items-center gap-4 ${className ?? ''}`}>
       <span className="text-2xl shrink-0" aria-hidden="true">📅</span>
-      <p className="text-sm text-blue-800 flex-1">
+      <p className="text-sm text-blue-800 dark:text-blue-300 flex-1">
         Collega Google Calendar per aggiungere le scadenze direttamente al tuo calendario.
       </p>
       <button

@@ -93,7 +93,7 @@ export function DocumentChatbot() {
         <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end">
             {/* Chat Window */}
             {isOpen && (
-                <div className="mb-4 w-[400px] h-[600px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-right">
+                <div className="mb-4 w-[400px] h-[600px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-right">
                     {/* Header */}
                     <div className="bg-indigo-600 px-4 py-3 flex items-center justify-between shadow-sm">
                         <div className="flex items-center gap-3">
@@ -117,7 +117,7 @@ export function DocumentChatbot() {
                     </div>
 
                     {/* Messages Area */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 dark:bg-gray-900/50">
                         {messages.map((m) => (
                             <div
                                 key={m.id}
@@ -128,11 +128,11 @@ export function DocumentChatbot() {
                                         {m.role === 'assistant' ? (
                                             <>
                                                 <Bot className="w-3.5 h-3.5 text-indigo-500" />
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Assistente</span>
+                                                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter">Assistente</span>
                                             </>
                                         ) : (
                                             <>
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Tu</span>
+                                                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter">Tu</span>
                                                 <User className="w-3.5 h-3.5 text-gray-500" />
                                             </>
                                         )}
@@ -141,7 +141,7 @@ export function DocumentChatbot() {
                                     <div
                                         className={`rounded-2xl px-4 py-2.5 shadow-sm text-sm ${m.role === 'user'
                                             ? 'bg-indigo-600 text-white rounded-tr-none'
-                                            : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
+                                            : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-600 rounded-tl-none'
                                             }`}
                                     >
                                         <div className="prose prose-sm max-w-none">
@@ -165,7 +165,7 @@ export function DocumentChatbot() {
                                         </div>
                                     )}
 
-                                    <span className="text-[9px] text-gray-400 mt-1 px-1">
+                                    <span className="text-[9px] text-gray-400 dark:text-gray-500 mt-1 px-1">
                                         {m.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                 </div>
@@ -173,7 +173,7 @@ export function DocumentChatbot() {
                         ))}
                         {isLoading && (
                             <div className="flex justify-start">
-                                <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
+                                <div className="bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
                                     <div className="flex gap-1">
                                         <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></span>
                                         <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
@@ -186,7 +186,7 @@ export function DocumentChatbot() {
                     </div>
 
                     {/* Input Area */}
-                    <div className="p-4 bg-white border-t border-gray-100">
+                    <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
                         <div className="relative flex items-center group">
                             <input
                                 type="text"
@@ -194,7 +194,7 @@ export function DocumentChatbot() {
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                                 placeholder="Chiedi pure..."
-                                className="w-full pl-4 pr-12 py-3 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400"
+                                className="w-full pl-4 pr-12 py-3 bg-gray-50 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-400 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400"
                             />
                             <button
                                 onClick={handleSend}
@@ -204,7 +204,7 @@ export function DocumentChatbot() {
                                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                             </button>
                         </div>
-                        <p className="text-[9px] text-center text-gray-400 mt-3 uppercase tracking-widest font-medium">
+                        <p className="text-[9px] text-center text-gray-400 dark:text-gray-500 mt-3 uppercase tracking-widest font-medium">
                             Powered by DocuFiscal RAG Engine
                         </p>
                     </div>
