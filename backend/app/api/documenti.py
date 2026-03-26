@@ -259,7 +259,9 @@ async def upload_documento(
             try:
                 from app.ai.deadline_extractor import extract_deadline
                 from app.models.scadenza import Scadenza
-                deadline = extract_deadline(extracted_text, documento.tipo_documento)
+                deadline = await anyio.to_thread.run_sync(
+                    lambda: extract_deadline(extracted_text, documento.tipo_documento)
+                )
                 if deadline.has_deadline and deadline.data_scadenza:
                     scadenza = Scadenza(
                         documento_id=documento.id,
@@ -292,7 +294,7 @@ async def upload_documento(
                 extraction = await anyio.to_thread.run_sync(
                     lambda: extract_contract_data(extracted_text)
                 )
-                if extraction.confidence > 0:
+                if extraction.confidence > 0.3:
                     existing_scadenza = db.query(Scadenza).filter(
                         Scadenza.documento_id == documento.id
                     ).first()

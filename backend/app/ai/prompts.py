@@ -203,10 +203,10 @@ def build_rag_chat_prompt(
 
     scadenze_section = ""
     if scadenze_context:
-        scadenze_section = f"""SCADENZE CONTRATTI (dati strutturati estratti da AI):
+        scadenze_section = f"""SCADENZE (dati strutturati estratti da AI):
 {scadenze_context}
 
-NOTA: Per domande su scadenze, date, canoni e clausole contrattuali, usa PRIORITARIAMENTE i dati strutturati sopra.
+NOTA: Per domande su scadenze, pagamenti, incassi, canoni e clausole, usa PRIORITARIAMENTE i dati strutturati sopra.
 Cita comunque i documenti con [ID: numero] quando disponibili.
 
 """
