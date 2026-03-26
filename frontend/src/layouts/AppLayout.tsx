@@ -5,6 +5,8 @@ import { useDocument } from '../context/DocumentContext';
 import { PdfDrawer } from '../components/PdfDrawer';
 import { DocumentChatbot } from '../components/DocumentChatbot';
 import { Omnibox } from '../components/Omnibox';
+import { useTheme } from '../hooks/useTheme';
+import ThemeToggle from '../components/ThemeToggle';
 
 interface NavItem {
   label: string;
@@ -71,6 +73,7 @@ const inactiveLinkClass = 'flex items-center gap-3 px-4 py-2.5 rounded-lg text-s
 const AppLayout: FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
+  const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const { viewingDocument, setViewingDocument, clienti, contratti, refreshSupportData } = useDocument();
   const navigate = useNavigate();
@@ -137,7 +140,7 @@ const AppLayout: FC = () => {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Desktop sidebar */}
       <aside
         className={`hidden md:flex md:flex-col bg-slate-800 flex-shrink-0 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-64' : 'w-0'
@@ -173,11 +176,11 @@ const AppLayout: FC = () => {
       {/* Main area */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Top bar (Combined Mobile & Desktop Toggle) */}
-        <header className="flex items-center gap-4 px-4 py-3 bg-white border-b border-gray-200 flex-shrink-0">
+        <header className="flex items-center gap-4 px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           {/* Mobile hamburger */}
           <button
             onClick={() => setSidebarOpen(true)}
-            className="md:hidden p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+            className="md:hidden p-1.5 rounded-lg text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors"
             aria-label="Apri menu"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -188,7 +191,7 @@ const AppLayout: FC = () => {
           {/* Desktop toggle */}
           <button
             onClick={() => setDesktopSidebarOpen(!desktopSidebarOpen)}
-            className="hidden md:flex p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+            className="hidden md:flex p-1.5 rounded-lg text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors"
             aria-label={desktopSidebarOpen ? "Chiudi menu" : "Apri menu"}
           >
             <svg className={`w-6 h-6 transition-transform duration-300 ${!desktopSidebarOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,7 +199,7 @@ const AppLayout: FC = () => {
             </svg>
           </button>
 
-          <span className="font-bold text-slate-800 tracking-tight">DocuFiscal</span>
+          <span className="font-bold text-slate-800 dark:text-gray-100 tracking-tight">DocuFiscal</span>
 
           {/* Omnibox — global semantic search */}
           <div className="flex-1 flex justify-center">
@@ -205,6 +208,7 @@ const AppLayout: FC = () => {
               onSelectDocument={(doc) => setViewingDocument(doc)}
             />
           </div>
+          <ThemeToggle theme={theme} onToggle={toggleTheme} />
         </header>
 
         {/* Page content */}
