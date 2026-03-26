@@ -8,6 +8,7 @@ from app.core.database import get_db
 from app.models.google_token import GoogleToken
 from app.models.scadenza import Scadenza
 from app.models.cliente import Cliente
+from app.models.contratto import Contratto
 from app.models.documento import Documento
 from app.models.user import User
 from app.schemas.google_calendar import (
@@ -75,14 +76,22 @@ def create_event_from_scadenza(
         raise HTTPException(status_code=404, detail="Scadenza non trovata")
 
     cliente = db.query(Cliente).filter(Cliente.id == scadenza.cliente_id).first()
-    documento = db.query(Documento).filter(Documento.id == scadenza.documento_id).first()
-
     cliente_nome = f"{cliente.nome} {cliente.cognome}".strip() if cliente else "Sconosciuto"
-    file_name = documento.file_name if documento else "documento"
 
-    summary = f"Scadenza contratto — {cliente_nome}"
+    if scadenza.documento_id:
+        documento = db.query(Documento).filter(Documento.id == scadenza.documento_id).first()
+        file_name = documento.file_name if documento else "documento"
+        summary = f"Scadenza: {file_name}"
+        desc_parts = [f"Cliente: {cliente_nome}", f"Documento: {file_name}"]
+    elif scadenza.contratto_id:
+        contratto = db.query(Contratto).filter(Contratto.id == scadenza.contratto_id).first()
+        tipo_nome = contratto.tipo_contratto.nome if contratto and contratto.tipo_contratto else "contratto"
+        summary = f"Scadenza contratto: {cliente_nome} — {tipo_nome}"
+        desc_parts = [f"Cliente: {cliente_nome}", f"Tipo contratto: {tipo_nome}"]
+    else:
+        summary = f"Scadenza — {cliente_nome}"
+        desc_parts = [f"Cliente: {cliente_nome}"]
 
-    desc_parts = [f"Cliente: {cliente_nome}", f"Documento: {file_name}"]
     if scadenza.canone:
         desc_parts.append(f"Canone: {scadenza.canone}")
     if scadenza.rinnovo_automatico is not None:
