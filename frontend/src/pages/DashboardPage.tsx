@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getDashboardStats } from '@/services/dashboardService';
 import { getGoogleStatus, createEventFromScadenza } from '@/services/googleService';
 import type { DashboardStats, ScadenzaDashboard } from '@/types/dashboard';
+import GoogleCalendarBanner from '@/components/GoogleCalendarBanner';
 
 // Inline SVG components to replace lucide-react dependency
 const UsersIcon = () => (
@@ -324,6 +325,9 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
 
+        <div className="px-6 pt-6">
+          <GoogleCalendarBanner />
+        </div>
         {critiche.length > 0 ? (
           <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {critiche.map((s) => (
