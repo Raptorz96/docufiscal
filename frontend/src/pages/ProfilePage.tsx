@@ -173,12 +173,12 @@ const ProfilePage: React.FC = () => {
   };
 
   const inputClass =
-    'w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500';
-  const labelClass = 'block text-sm font-medium text-gray-700 mb-1';
+    'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500';
+  const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
   const btnPrimary =
     'px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed';
   const btnSecondary =
-    'px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed';
+    'px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const formatDate = (iso: string) => {
     try {
@@ -192,21 +192,21 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Il mio profilo</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Il mio profilo</h1>
 
       {/* Section 1 — Profile data */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Dati personali</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Dati personali</h2>
 
         {/* Read-only info */}
-        <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-md text-sm">
+        <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-md text-sm">
           <div>
-            <span className="font-medium text-gray-500">Ruolo</span>
-            <p className="text-gray-800 mt-0.5 capitalize">{user?.role ?? '—'}</p>
+            <span className="font-medium text-gray-500 dark:text-gray-400">Ruolo</span>
+            <p className="text-gray-800 dark:text-gray-200 mt-0.5 capitalize">{user?.role ?? '—'}</p>
           </div>
           <div>
-            <span className="font-medium text-gray-500">Registrato il</span>
-            <p className="text-gray-800 mt-0.5">
+            <span className="font-medium text-gray-500 dark:text-gray-400">Registrato il</span>
+            <p className="text-gray-800 dark:text-gray-200 mt-0.5">
               {user?.created_at ? formatDate(user.created_at) : '—'}
             </p>
           </div>
@@ -254,12 +254,12 @@ const ProfilePage: React.FC = () => {
           </div>
 
           {profileSuccess && (
-            <div className="bg-green-50 border border-green-200 text-green-800 text-sm rounded-md px-4 py-3">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 text-sm rounded-md px-4 py-3">
               {profileSuccess}
             </div>
           )}
           {profileError && (
-            <div className="bg-red-50 border border-red-200 text-red-800 text-sm rounded-md px-4 py-3">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 text-sm rounded-md px-4 py-3">
               {profileError}
             </div>
           )}
@@ -273,8 +273,8 @@ const ProfilePage: React.FC = () => {
       </div>
 
       {/* Section 2 — Password change */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Cambia password</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Cambia password</h2>
 
         <form onSubmit={handlePasswordSubmit} className="space-y-4">
           <div>
@@ -317,12 +317,12 @@ const ProfilePage: React.FC = () => {
           </div>
 
           {passwordSuccess && (
-            <div className="bg-green-50 border border-green-200 text-green-800 text-sm rounded-md px-4 py-3">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 text-sm rounded-md px-4 py-3">
               {passwordSuccess}
             </div>
           )}
           {passwordError && (
-            <div className="bg-red-50 border border-red-200 text-red-800 text-sm rounded-md px-4 py-3">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 text-sm rounded-md px-4 py-3">
               {passwordError}
             </div>
           )}
@@ -336,8 +336,8 @@ const ProfilePage: React.FC = () => {
       </div>
 
       {/* Section 3 — Integrations */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Integrazioni</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Integrazioni</h2>
 
         {googleSuccess && (
           <div className="bg-green-50 border border-green-200 text-green-800 text-sm rounded-md px-4 py-3 mb-4">
@@ -353,7 +353,7 @@ const ProfilePage: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Google Calendar icon */}
-            <div className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 shrink-0">
+            <div className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 shrink-0">
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="3" y="3" width="18" height="18" rx="2" stroke="#4285F4" strokeWidth="1.5"/>
                 <path d="M3 8h18" stroke="#4285F4" strokeWidth="1.5"/>
@@ -363,7 +363,7 @@ const ProfilePage: React.FC = () => {
             </div>
 
             <div>
-              <p className="text-sm font-medium text-gray-800">Google Calendar</p>
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Google Calendar</p>
               {googleLoading ? (
                 <p className="text-xs text-gray-400">Verifica connessione...</p>
               ) : googleUnavailable ? (
@@ -403,7 +403,7 @@ const ProfilePage: React.FC = () => {
           )}
         </div>
 
-        <p className="text-xs text-gray-400 mt-4">
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
           Connetti il tuo Google Calendar per creare reminder automatici dalle scadenze dei contratti.
         </p>
       </div>
