@@ -128,14 +128,14 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
       className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
       onClick={handleOverlayClick}
     >
-      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
             {isEditMode ? 'Modifica Cliente' : 'Nuovo Cliente'}
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
             type="button"
           >
             <span className="sr-only">Chiudi</span>
@@ -147,14 +147,14 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
+            <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-md">
               {error}
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="nome" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="nome" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Nome *
               </label>
               <input
@@ -162,13 +162,13 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
                 id="nome"
                 value={formData.nome}
                 onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="cognome" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="cognome" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Cognome
               </label>
               <input
@@ -176,13 +176,13 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
                 id="cognome"
                 value={formData.cognome}
                 onChange={(e) => setFormData({ ...formData, cognome: e.target.value })}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="short_id" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="short_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Short ID (es. #105)
             </label>
             <input
@@ -196,7 +196,7 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
           </div>
 
           <div>
-            <label htmlFor="codice_fiscale" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="codice_fiscale" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Codice Fiscale **
             </label>
             <input
@@ -210,7 +210,7 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
           </div>
 
           <div>
-            <label htmlFor="partita_iva" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="partita_iva" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Partita IVA **
             </label>
             <input
@@ -223,10 +223,10 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
             />
           </div>
 
-          <p className="text-xs text-gray-500 -mt-2">** Almeno uno dei due è obbligatorio</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 -mt-2">** Almeno uno dei due è obbligatorio</p>
 
           <div>
-            <label htmlFor="tipo" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="tipo" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Tipo
             </label>
             <select
@@ -241,7 +241,7 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Email
             </label>
             <input
@@ -254,7 +254,7 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
           </div>
 
           <div>
-            <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Telefono
             </label>
             <input
@@ -270,7 +270,7 @@ export function ClienteFormModal({ isOpen, onClose, onSuccess, cliente }: Props)
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Annulla
             </button>

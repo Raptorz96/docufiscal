@@ -76,18 +76,18 @@ export function ClassificazioneModal({ documento, clienti, contratti, onClose, o
       className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
       onClick={handleOverlayClick}
     >
-      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div>
-            <h3 className="text-lg font-medium text-gray-900">Classificazione documento</h3>
-            <p className="mt-0.5 text-xs text-gray-500 truncate max-w-xs">{documento.file_name}</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Classificazione documento</h3>
+            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">{documento.file_name}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <span className="sr-only">Chiudi</span>
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -98,18 +98,18 @@ export function ClassificazioneModal({ documento, clienti, contratti, onClose, o
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">{error}</div>
+            <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-md">{error}</div>
           )}
 
           {/* AI info banner */}
           {documento.classificazione_ai !== null && !documento.verificato_da_utente && (
-            <div className="p-3 text-sm bg-blue-50 border border-blue-100 rounded-md">
-              <p className="text-blue-800 font-medium">Classificazione AI</p>
+            <div className="p-3 text-sm bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-md">
+              <p className="text-blue-800 dark:text-blue-300 font-medium">Classificazione AI</p>
               {documento.tipo_documento_raw && (
-                <p className="text-blue-700 mt-0.5">{documento.tipo_documento_raw}</p>
+                <p className="text-blue-700 dark:text-blue-400 mt-0.5">{documento.tipo_documento_raw}</p>
               )}
               {documento.confidence_score !== null && (
-                <p className="text-blue-600 mt-0.5">
+                <p className="text-blue-600 dark:text-blue-400 mt-0.5">
                   Confidenza: {Math.round(documento.confidence_score * 100)}%
                 </p>
               )}
@@ -118,14 +118,14 @@ export function ClassificazioneModal({ documento, clienti, contratti, onClose, o
 
           {/* Tipo Documento */}
           <div>
-            <label htmlFor="classifica-tipo" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="classifica-tipo" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Tipo Documento *
             </label>
             <select
               id="classifica-tipo"
               value={tipoDocumento}
               onChange={(e) => setTipoDocumento(e.target.value as TipoDocumento)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               {(Object.keys(TIPO_LABELS) as TipoDocumento[]).map((tipo) => (
                 <option key={tipo} value={tipo}>{TIPO_LABELS[tipo]}</option>
@@ -135,14 +135,14 @@ export function ClassificazioneModal({ documento, clienti, contratti, onClose, o
 
           {/* Cliente */}
           <div>
-            <label htmlFor="classifica-cliente" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="classifica-cliente" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Cliente *
             </label>
             <select
               id="classifica-cliente"
               value={clienteId}
               onChange={handleClienteChange}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               {clienti.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -154,14 +154,14 @@ export function ClassificazioneModal({ documento, clienti, contratti, onClose, o
 
           {/* Contratto */}
           <div>
-            <label htmlFor="classifica-contratto" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="classifica-contratto" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Contratto
             </label>
             <select
               id="classifica-contratto"
               value={contrattoId ?? ''}
               onChange={(e) => setContrattoId(e.target.value ? parseInt(e.target.value) : null)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               <option value="">Nessuno</option>
               {contrattiFiltered.map((c) => (
@@ -174,7 +174,7 @@ export function ClassificazioneModal({ documento, clienti, contratti, onClose, o
 
           {/* Note */}
           <div>
-            <label htmlFor="classifica-note" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="classifica-note" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Note
             </label>
             <textarea
@@ -182,17 +182,17 @@ export function ClassificazioneModal({ documento, clienti, contratti, onClose, o
               rows={3}
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="Note aggiuntive..."
             />
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Annulla
             </button>
@@ -201,7 +201,7 @@ export function ClassificazioneModal({ documento, clienti, contratti, onClose, o
                 type="button"
                 onClick={handleConferma}
                 disabled={loading}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-md shadow-sm hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-md shadow-sm hover:bg-indigo-100 dark:hover:bg-indigo-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? spinner : '✓ Conferma'}
               </button>

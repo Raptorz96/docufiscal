@@ -110,14 +110,14 @@ export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto, clie
       className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
       onClick={handleOverlayClick}
     >
-      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
             {isEditMode ? 'Modifica Contratto' : 'Nuovo Contratto'}
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
             type="button"
           >
             <span className="sr-only">Chiudi</span>
@@ -129,20 +129,20 @@ export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto, clie
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
             {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
+              <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-md">
                 {error}
               </div>
             )}
 
             <div>
-              <label htmlFor="cliente_id" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="cliente_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Cliente *
               </label>
               <select
                 id="cliente_id"
                 value={formData.cliente_id}
                 onChange={(e) => setFormData({ ...formData, cliente_id: e.target.value })}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               >
                 <option value="">Seleziona cliente</option>
@@ -155,14 +155,14 @@ export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto, clie
             </div>
 
             <div>
-              <label htmlFor="tipo_contratto_id" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="tipo_contratto_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Tipo Contratto *
               </label>
               <select
                 id="tipo_contratto_id"
                 value={formData.tipo_contratto_id}
                 onChange={(e) => setFormData({ ...formData, tipo_contratto_id: e.target.value })}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               >
                 <option value="">Seleziona tipo contratto</option>
@@ -175,7 +175,7 @@ export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto, clie
             </div>
 
             <div>
-              <label htmlFor="data_inizio" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="data_inizio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Data Inizio *
               </label>
               <input
@@ -183,13 +183,13 @@ export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto, clie
                 id="data_inizio"
                 value={formData.data_inizio}
                 onChange={(e) => setFormData({ ...formData, data_inizio: e.target.value })}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="data_fine" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="data_fine" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Data Fine
               </label>
               <input
@@ -197,19 +197,19 @@ export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto, clie
                 id="data_fine"
                 value={formData.data_fine}
                 onChange={(e) => setFormData({ ...formData, data_fine: e.target.value })}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
 
             <div>
-              <label htmlFor="stato" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="stato" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Stato
               </label>
               <select
                 id="stato"
                 value={formData.stato}
                 onChange={(e) => setFormData({ ...formData, stato: e.target.value as 'attivo' | 'scaduto' | 'sospeso' })}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               >
                 <option value="attivo">Attivo</option>
                 <option value="scaduto">Scaduto</option>
@@ -218,7 +218,7 @@ export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto, clie
             </div>
 
             <div>
-              <label htmlFor="note" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="note" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Note
               </label>
               <textarea
@@ -226,7 +226,7 @@ export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto, clie
                 rows={3}
                 value={formData.note}
                 onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 placeholder="Note aggiuntive..."
               />
             </div>
@@ -235,7 +235,7 @@ export function ContrattoFormModal({ isOpen, onClose, onSuccess, contratto, clie
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Annulla
               </button>

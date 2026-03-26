@@ -160,10 +160,10 @@ export function Omnibox({ clienti, onSelectDocument }: OmniboxProps) {
     <div ref={containerRef} className="relative w-full max-w-md">
       {/* Input */}
       <div className={`
-        flex items-center gap-2 px-3 py-2 rounded-lg border bg-white transition-all duration-150
+        flex items-center gap-2 px-3 py-2 rounded-lg border bg-white dark:bg-gray-700 transition-all duration-150
         ${isOpen || isFocused
-          ? 'border-slate-400 ring-2 ring-slate-800/8 shadow-sm'
-          : 'border-gray-200 hover:border-gray-300'
+          ? 'border-slate-400 dark:border-gray-500 ring-2 ring-slate-800/8 shadow-sm'
+          : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
         }
       `}>
         {/* Search icon */}
@@ -181,7 +181,7 @@ export function Omnibox({ clienti, onSelectDocument }: OmniboxProps) {
           onFocus={() => { setIsFocused(true); if (results.length > 0) setIsOpen(true); }}
           onBlur={() => setIsFocused(false)}
           placeholder="Cerca documenti… ( / )"
-          className="flex-1 text-sm text-slate-700 placeholder-gray-400 bg-transparent outline-none min-w-0"
+          className="flex-1 text-sm text-slate-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 bg-transparent outline-none min-w-0"
           autoComplete="off"
           spellCheck={false}
         />
@@ -211,13 +211,13 @@ export function Omnibox({ clienti, onSelectDocument }: OmniboxProps) {
 
       {/* Dropdown */}
       {(isOpen || showEmpty) && (
-        <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-gray-100 rounded-xl shadow-xl z-40 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-xl z-40 overflow-hidden">
           {showEmpty ? (
-            <div className="px-4 py-6 text-center text-sm text-gray-400">
+            <div className="px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">
               Nessun risultato
             </div>
           ) : (
-            <ul className="divide-y divide-gray-50">
+            <ul className="divide-y divide-gray-50 dark:divide-gray-700">
               {results.map((res, idx) => {
                 const doc = res.documento;
                 const badge = getTipoBadge(doc.tipo_documento);
@@ -232,12 +232,12 @@ export function Omnibox({ clienti, onSelectDocument }: OmniboxProps) {
                       onMouseEnter={() => setActiveIndex(idx)}
                       className={`
                         w-full text-left px-4 py-3 flex items-center gap-3 transition-colors duration-75
-                        ${isActive ? 'bg-slate-50' : 'hover:bg-gray-50'}
+                        ${isActive ? 'bg-slate-50 dark:bg-gray-700' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}
                       `}
                     >
                       {/* Document icon */}
-                      <div className="flex-shrink-0 w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center">
-                        <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-md bg-slate-100 dark:bg-gray-600 flex items-center justify-center">
+                        <svg className="w-4 h-4 text-slate-500 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                             d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
@@ -246,14 +246,14 @@ export function Omnibox({ clienti, onSelectDocument }: OmniboxProps) {
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-slate-800 truncate max-w-[180px]" title={doc.file_name}>
+                          <span className="text-sm font-medium text-slate-800 dark:text-gray-100 truncate max-w-[180px]" title={doc.file_name}>
                             {doc.file_name}
                           </span>
                           <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium flex-shrink-0 ${badge.className}`}>
                             {badge.label}
                           </span>
                         </div>
-                        <div className="text-xs text-gray-400 mt-0.5 truncate">{clienteNome}</div>
+                        <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">{clienteNome}</div>
                       </div>
 
                       {/* Arrow */}
