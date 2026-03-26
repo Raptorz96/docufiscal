@@ -80,31 +80,31 @@ const ScadenzePage: React.FC = () => {
         <div className="p-8 space-y-6 max-w-7xl mx-auto">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Scadenze</h1>
-                <p className="text-gray-500 mt-1">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Scadenze</h1>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">
                     {scadenze.length} scadenz{scadenze.length === 1 ? 'a' : 'e'} totali
                 </p>
             </div>
 
             {/* Barra filtri */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-wrap gap-3 items-center">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex flex-wrap gap-3 items-center">
                 <input
                     type="text"
                     placeholder="Cerca cliente o descrizione..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 min-w-[200px] focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    className="border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 rounded-lg px-3 py-2 text-sm flex-1 min-w-[200px] focus:outline-none focus:ring-2 focus:ring-indigo-300"
                 />
                 <select
                     value={tipoFilter}
                     onChange={(e) => setTipoFilter(e.target.value)}
-                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    className="border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
                 >
                     {TIPO_OPTIONS.map((o) => (
                         <option key={o.value} value={o.value}>{o.label}</option>
                     ))}
                 </select>
-                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none">
                     <input
                         type="checkbox"
                         checked={soloNonVerificati}
@@ -119,7 +119,7 @@ const ScadenzePage: React.FC = () => {
             <GoogleCalendarBanner className="mb-4" />
 
             {/* Tabella */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
                 {loading ? (
                     <div className="flex items-center justify-center p-12">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -133,7 +133,7 @@ const ScadenzePage: React.FC = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-gray-50/50 text-gray-400 text-[10px] uppercase font-bold tracking-widest">
+                                <tr className="bg-gray-50/50 dark:bg-gray-700/50 text-gray-400 dark:text-gray-500 text-[10px] uppercase font-bold tracking-widest">
                                     <th className="px-5 py-4">Cliente</th>
                                     <th className="px-5 py-4">Tipo</th>
                                     <th className="px-5 py-4">Descrizione</th>
@@ -150,17 +150,17 @@ const ScadenzePage: React.FC = () => {
                                     return (
                                         <tr
                                             key={s.id}
-                                            className={`hover:bg-gray-50/50 transition-colors cursor-pointer ${urgenzaRowClass(s.giorni_rimanenti)}`}
+                                            className={`hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer ${urgenzaRowClass(s.giorni_rimanenti)}`}
                                             onClick={() => navigate(`/documenti?cliente_id=${s.cliente_id}`)}
                                         >
-                                            <td className="px-5 py-3 text-sm font-medium text-gray-900">{s.cliente_nome}</td>
+                                            <td className="px-5 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">{s.cliente_nome}</td>
                                             <td className="px-5 py-3">
                                                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${badge.className}`}>
                                                     {badge.label}
                                                 </span>
                                             </td>
-                                            <td className="px-5 py-3 text-sm text-gray-600 max-w-xs truncate">{s.descrizione || '—'}</td>
-                                            <td className="px-5 py-3 text-sm text-gray-600">
+                                            <td className="px-5 py-3 text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate">{s.descrizione || '—'}</td>
+                                            <td className="px-5 py-3 text-sm text-gray-600 dark:text-gray-400">
                                                 {s.data_scadenza
                                                     ? new Date(s.data_scadenza).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })
                                                     : '—'}
@@ -170,7 +170,7 @@ const ScadenzePage: React.FC = () => {
                                                     {giorniLabel(s.giorni_rimanenti)}
                                                 </span>
                                             </td>
-                                            <td className="px-5 py-3 text-sm text-gray-600">{s.canone || '—'}</td>
+                                            <td className="px-5 py-3 text-sm text-gray-600 dark:text-gray-400">{s.canone || '—'}</td>
                                             <td className="px-5 py-3">
                                                 {s.verificato ? (
                                                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-50 text-green-700">
@@ -182,7 +182,7 @@ const ScadenzePage: React.FC = () => {
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="px-5 py-3 text-xs text-gray-400 max-w-[150px] truncate" title={s.file_name}>
+                                            <td className="px-5 py-3 text-xs text-gray-400 dark:text-gray-500 max-w-[150px] truncate" title={s.file_name}>
                                                 {s.file_name}
                                             </td>
                                         </tr>
