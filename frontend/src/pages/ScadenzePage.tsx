@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getScadenze } from '../services/scadenzeService';
 import type { Scadenza, ScadenzaFilters } from '../types/scadenza';
+import GoogleCalendarBanner from '@/components/GoogleCalendarBanner';
 
 const TIPO_OPTIONS = [
     { value: '', label: 'Tutti i tipi' },
@@ -113,6 +114,9 @@ const ScadenzePage: React.FC = () => {
                     Solo non verificate
                 </label>
             </div>
+
+            {/* Google Calendar Banner */}
+            <GoogleCalendarBanner className="mb-4" />
 
             {/* Tabella */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
