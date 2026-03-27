@@ -28,9 +28,9 @@ function tipoBadge(tipo: string): { label: string; className: string } {
 
 function urgenzaRowClass(giorni: number | null): string {
     if (giorni === null) return '';
-    if (giorni < 0) return 'bg-red-50';
-    if (giorni < 7) return 'bg-orange-50';
-    if (giorni < 30) return 'bg-yellow-50/50';
+    if (giorni < 0) return 'bg-red-50 dark:bg-red-900/20';
+    if (giorni < 7) return 'bg-orange-50 dark:bg-orange-900/20';
+    if (giorni < 30) return 'bg-yellow-50/50 dark:bg-yellow-900/10';
     return '';
 }
 
@@ -144,7 +144,7 @@ const ScadenzePage: React.FC = () => {
                                     <th className="px-5 py-4">Documento</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50">
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {scadenze.map((s) => {
                                     const badge = tipoBadge(s.tipo_scadenza);
                                     return (
