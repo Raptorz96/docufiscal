@@ -1,0 +1,241 @@
+import { useState, type FC, type ReactNode, useEffect } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useDocument } from '../context/DocumentContext';
+import { PdfDrawer } from '../components/PdfDrawer';
+import { DocumentChatbot } from '../components/DocumentChatbot';
+import { Omnibox } from '../components/Omnibox';
+import { useTheme } from '../hooks/useTheme';
+import ThemeToggle from '../components/ThemeToggle';
+
+interface NavItem {
+  label: string;
+  to: string;
+  icon: ReactNode;
+}
+
+const navItems: NavItem[] = [
+  {
+    label: 'Dashboard',
+    to: '/',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Scadenze',
+    to: '/scadenze',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Clienti',
+    to: '/clienti',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Contratti',
+    to: '/contratti',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Documenti',
+    to: '/documenti',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+];
+
+const activeLinkClass = 'flex items-center gap-3 px-4 py-2.5 rounded-lg bg-slate-700 text-white font-medium';
+const inactiveLinkClass = 'flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors';
+
+const AppLayout: FC = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
+  const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
+  const { viewingDocument, setViewingDocument, clienti, contratti, refreshSupportData } = useDocument();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    refreshSupportData();
+  }, [refreshSupportData]);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const displayName = user ? `${user.nome} ${user.cognome}` : '';
+
+  const sidebarContent = (
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Brand */}
+      <div className="px-6 py-5 border-b border-slate-700 flex-shrink-0">
+        <span className="text-white font-bold text-lg tracking-tight">DocuFiscal</span>
+      </div>
+
+      {/* Nav links */}
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === '/'}
+            className={({ isActive }) => isActive ? activeLinkClass : inactiveLinkClass}
+            onClick={() => setSidebarOpen(false)}
+          >
+            {item.icon}
+            <span className="truncate">{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* User + Logout */}
+      <div className="px-3 py-4 border-t border-slate-700 flex-shrink-0">
+        <div className="flex items-center gap-3 px-4 py-2 mb-2">
+          <div className="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+            {user?.nome?.[0]?.toUpperCase() ?? '?'}
+          </div>
+          <NavLink
+            to="/profilo"
+            className="text-slate-300 hover:text-white text-sm truncate underline-offset-2 hover:underline"
+          >
+            {displayName}
+          </NavLink>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-300 hover:bg-red-600 hover:text-white transition-colors text-sm"
+        >
+          <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          <span className="truncate">Logout</span>
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Desktop sidebar */}
+      <aside
+        className={`hidden md:flex md:flex-col bg-slate-800 flex-shrink-0 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-64' : 'w-0'
+          }`}
+      >
+        <div className={`${desktopSidebarOpen ? 'w-64' : 'w-0'} h-full transition-all duration-300 ease-in-out`}>
+          {sidebarContent}
+        </div>
+      </aside>
+
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          role="button"
+          tabIndex={-1}
+          aria-label="Chiudi menu"
+          className="fixed inset-0 z-20 bg-black bg-opacity-50 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+          onKeyDown={(e) => { if (e.key === 'Escape') setSidebarOpen(false); }}
+        />
+      )}
+
+      {/* Mobile sidebar */}
+      <aside
+        aria-hidden={!sidebarOpen}
+        inert={!sidebarOpen ? true : undefined}
+        className={`fixed inset-y-0 left-0 z-30 w-64 bg-slate-800 flex flex-col transform transition-transform duration-200 md:hidden ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+      >
+        {sidebarContent}
+      </aside>
+
+      {/* Main area */}
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        {/* Top bar (Combined Mobile & Desktop Toggle) */}
+        <header className="flex items-center gap-4 px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="md:hidden p-1.5 rounded-lg text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors"
+            aria-label="Apri menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          {/* Desktop toggle */}
+          <button
+            onClick={() => setDesktopSidebarOpen(!desktopSidebarOpen)}
+            className="hidden md:flex p-1.5 rounded-lg text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors"
+            aria-label={desktopSidebarOpen ? "Chiudi menu" : "Apri menu"}
+          >
+            <svg className={`w-6 h-6 transition-transform duration-300 ${!desktopSidebarOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <span className="font-bold text-slate-800 dark:text-gray-100 tracking-tight">DocuFiscal</span>
+
+          {/* Omnibox — global semantic search */}
+          <div className="flex-1 flex justify-center">
+            <Omnibox
+              clienti={clienti}
+              onSelectDocument={(doc) => setViewingDocument(doc)}
+            />
+          </div>
+          <ThemeToggle theme={theme} onToggle={toggleTheme} />
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto relative">
+          <Outlet />
+        </main>
+      </div>
+
+      {/* Global PDF Drawer */}
+      <PdfDrawer
+        documento={viewingDocument}
+        clienti={clienti}
+        contratti={contratti}
+        onClose={() => setViewingDocument(null)}
+        onSuccess={(updated) => {
+          // If we are on the DocumentiPage, it might need to know about the update.
+          // Since it's global, we could use an event emitter or just rely on the fact that
+          // the user will usually refresh or we could put the refresh logic in context.
+          // For now, let's keep it simple.
+          setViewingDocument(updated);
+        }}
+      />
+
+      {/* RAG Chatbot */}
+      <DocumentChatbot />
+    </div>
+  );
+};
+
+export default AppLayout;
