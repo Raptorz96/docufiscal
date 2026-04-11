@@ -13,7 +13,7 @@ TIPO_DESCRIPTIONS: dict[str, str] = {
     "contratto": "Contratti di lavoro, affitto, servizi",
     "bilancio": "Bilancio d'esercizio, stato patrimoniale",
     "comunicazione_agenzia": "Comunicazioni dall'Agenzia delle Entrate",
-    "documento_identita": "Carta d'identità, codice fiscale, passaporto",
+    "documento_identita": "Carta d'identità, tessera sanitaria, codice fiscale, passaporto, patente di guida, permesso di soggiorno",
     "altro": "Documento non classificabile nelle categorie precedenti",
 }
 
@@ -207,7 +207,6 @@ def build_rag_chat_prompt(
 {scadenze_context}
 
 NOTA: Per domande su scadenze, pagamenti, incassi, canoni e clausole, usa PRIORITARIAMENTE i dati strutturati sopra.
-Cita comunque i documenti con [ID: numero] quando disponibili.
 
 """
 
@@ -242,7 +241,7 @@ Il tuo compito è rispondere alle domande degli utenti basandoti ESCLUSIVAMENTE 
 
 REGOLE:
 1. Se il contesto contiene la risposta, rispondi in modo professionale ed esaustivo usando il formato Markdown.
-2. Cita sempre i documenti di riferimento inserendo nel testo della risposta dei riferimenti come [ID: numero].
+2. Se fai riferimento a informazioni da documenti specifici, menziona il nome del documento nel testo in modo naturale (es. "come indicato nella fattura_rossi_2025.pdf" o "secondo il contratto di locazione"). Non usare mai formati come [ID: X] o [Documento X] nel corpo della risposta.
 3. Alla fine della risposta, aggiungi SEMPRE una sezione tecnica delimitata da '--- CITATIONS ---' che contenga esclusivamente un array JSON con gli ID numerici dei documenti citati, ad esempio: [105, 120].
 4. Se il contesto NON contiene informazioni sufficienti, spiega gentilmente che non hai dati su quell'argomento specifico tra i documenti caricati.
 5. Non inventare informazioni non presenti nei documenti.
