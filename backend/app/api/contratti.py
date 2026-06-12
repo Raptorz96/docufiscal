@@ -1,7 +1,8 @@
 """API endpoints for managing contratti."""
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
@@ -13,6 +14,10 @@ from app.models.user import User
 from app.schemas.contratto import ContrattoCreate, ContrattoUpdate, ContrattoResponse
 
 router = APIRouter(prefix="/contratti", tags=["contratti"])
+
+
+class BulkDeleteRequest(BaseModel):
+    ids: list[int] = Field(..., min_length=1)
 
 
 def _upsert_scadenza_from_contratto(db: Session, contratto: Contratto) -> None:
@@ -86,6 +91,30 @@ def list_contratti(
 
     contratti = query.all()
     return [ContrattoResponse.model_validate(contratto) for contratto in contratti]
+
+
+@router.post("/bulk-delete", status_code=status.HTTP_200_OK)
+def bulk_delete_contratti(
+    body: BulkDeleteRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Dict[str, Any]:
+    """Bulk delete contratti by ID list. Best-effort: failures are reported, not raised."""
+    deleted = 0
+    failed: list[dict] = []
+    for contratto_id in body.ids:
+        try:
+            contratto = db.query(Contratto).filter(Contratto.id == contratto_id).first()
+            if not contratto:
+                failed.append({"id": contratto_id, "error": "Not found"})
+                continue
+            db.delete(contratto)
+            db.commit()
+            deleted += 1
+        except Exception as exc:
+            db.rollback()
+            failed.append({"id": contratto_id, "error": str(exc)})
+    return {"deleted": deleted, "failed": failed}
 
 
 @router.get("/{contratto_id}", response_model=ContrattoResponse)

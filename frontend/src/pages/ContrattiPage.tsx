@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AxiosError } from 'axios';
-import { getContratti, deleteContratto } from '@/services/contrattiService';
+import { getContratti, deleteContratto, bulkDeleteContratti } from '@/services/contrattiService';
 import { getClienti } from '@/services/clientiService';
 import { getTipiContratto } from '@/services/tipiContrattoService';
 import { getContrattiDocumenti } from '@/services/documentoService';
@@ -25,11 +25,22 @@ export function ContrattiPage() {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [contrattiDocumenti, setContrattiDocumenti] = useState<Documento[]>([]);
   const [uploadBanner, setUploadBanner] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkConfirmOpen, setBulkConfirmOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Maps per lookup nomi
   const clientiMap = useRef<Map<number, string>>(new Map());
   const tipiContrattoMap = useRef<Map<number, string>>(new Map());
   const isInitialMount = useRef(true);
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    if (toastTimeout.current) clearTimeout(toastTimeout.current);
+    setToast({ message, type });
+    toastTimeout.current = setTimeout(() => setToast(null), 5000);
+  }, []);
 
   const loadSupportData = useCallback(async () => {
     try {
@@ -106,8 +117,38 @@ export function ContrattiPage() {
       return;
     }
     loadContratti();
+    setSelectedIds(new Set());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clienteFilter, tipoContrattoFilter, statoFilter]);
+
+  const allSelected = contratti.length > 0 && contratti.every((c) => selectedIds.has(c.id));
+  const someSelected = contratti.some((c) => selectedIds.has(c.id)) && !allSelected;
+
+  const toggleAllSelection = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(contratti.map((c) => c.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    setBulkDeleting(true);
+    try {
+      const result = await bulkDeleteContratti(Array.from(selectedIds));
+      setBulkConfirmOpen(false);
+      setSelectedIds(new Set());
+      await loadContratti();
+      const msg = result.failed.length > 0
+        ? `${result.deleted} eliminati, ${result.failed.length} falliti`
+        : `${result.deleted} eliminati con successo`;
+      showToast(msg, result.failed.length > 0 ? 'error' : 'success');
+    } catch {
+      showToast("Errore durante l'eliminazione in massa", 'error');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
 
   const handleDelete = async (contratto: Contratto) => {
     const clienteNome = clientiMap.current.get(contratto.cliente_id) || 'Cliente sconosciuto';
@@ -223,6 +264,26 @@ export function ContrattiPage() {
           </div>
         </div>
 
+        {selectedIds.size > 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 px-4 py-2.5 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-xl">
+            <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+              {selectedIds.size} {selectedIds.size === 1 ? 'selezionato' : 'selezionati'}
+            </span>
+            <button
+              onClick={() => setBulkConfirmOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+            >
+              Elimina selezionati
+            </button>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+            >
+              Annulla selezione
+            </button>
+          </div>
+        )}
+
         <div className="mt-6 bg-white dark:bg-gray-800 shadow-sm rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -281,6 +342,15 @@ export function ContrattiPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
+                    <th className="px-3 py-3 text-left">
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        ref={(el) => { if (el) el.indeterminate = someSelected; }}
+                        onChange={toggleAllSelection}
+                        className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                      />
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Cliente
                     </th>
@@ -303,7 +373,19 @@ export function ContrattiPage() {
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {contratti.map((contratto) => (
-                    <tr key={contratto.id}>
+                    <tr key={contratto.id} className={selectedIds.has(contratto.id) ? 'ring-1 ring-inset ring-indigo-300 dark:ring-indigo-600' : ''}>
+                      <td className="px-3 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(contratto.id)}
+                          onChange={() => setSelectedIds((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(contratto.id)) next.delete(contratto.id); else next.add(contratto.id);
+                            return next;
+                          })}
+                          className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                        />
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                         {clientiMap.current.get(contratto.cliente_id) || 'Cliente sconosciuto'}
                       </td>
@@ -398,6 +480,58 @@ export function ContrattiPage() {
         onSuccess={handleUploadSuccess}
         isContratto={true}
       />
+
+      {/* Bulk delete confirmation modal */}
+      {bulkConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-xl max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Conferma eliminazione</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              Stai per eliminare{' '}
+              <strong className="text-gray-900 dark:text-gray-100">
+                {selectedIds.size} {selectedIds.size === 1 ? 'contratto' : 'contratti'}
+              </strong>.{' '}
+              L'operazione non è reversibile.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setBulkConfirmOpen(false)}
+                disabled={bulkDeleting}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+              >
+                Annulla
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                disabled={bulkDeleting}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-50"
+              >
+                {bulkDeleting && (
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                )}
+                {bulkDeleting ? 'Eliminazione...' : 'Elimina'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <div className={`rounded-xl px-4 py-3 shadow-xl flex items-center gap-3 ${toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+            <span className="text-sm font-medium">{toast.message}</span>
+            <button onClick={() => setToast(null)} className="ml-auto p-1 hover:bg-white/20 rounded-lg transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

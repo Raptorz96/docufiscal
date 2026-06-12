@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AxiosError } from 'axios';
-import { getDocumenti, deleteDocumento, downloadDocumento, classificaDocumento } from '@/services/documentoService';
+import { getDocumenti, deleteDocumento, downloadDocumento, classificaDocumento, bulkDeleteDocumenti } from '@/services/documentoService';
 import {
   TIPO_LABELS,
   TIPO_BADGE_CLASSES,
@@ -41,6 +41,9 @@ export function DocumentiPage() {
   const { viewingDocument, setViewingDocument, clienti, contratti, refreshSupportData } = useDocument();
   const [confirmingId, setConfirmingId] = useState<number | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkConfirmOpen, setBulkConfirmOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const clientiMap = useRef<Map<number, string>>(new Map());
@@ -211,6 +214,66 @@ export function DocumentiPage() {
     statoFilter !== 'tutti' ? statoFilter : '',
     unassignedFilter ? 'yes' : '',
   ].filter(Boolean).length;
+
+  // Reset selection whenever any filter changes
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [clienteFilter, contrattoFilter, tipoFilter, unassignedFilter, macroCategoriaFilter, annoFilter, statoFilter, searchFilter]);
+
+  const allPageSelected = filteredDocumenti.length > 0 && filteredDocumenti.every((d) => selectedIds.has(d.id));
+  const somePageSelected = filteredDocumenti.some((d) => selectedIds.has(d.id)) && !allPageSelected;
+
+  const togglePageSelection = () => {
+    if (allPageSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredDocumenti.map((d) => d.id)));
+    }
+  };
+
+  const handleSelectAll = async () => {
+    try {
+      const params: { cliente_id?: number; contratto_id?: number; tipo_documento?: string; unassigned?: boolean; is_contratto?: boolean } = {};
+      if (clienteFilter) params.cliente_id = parseInt(clienteFilter);
+      if (contrattoFilter) params.contratto_id = parseInt(contrattoFilter);
+      if (tipoFilter) params.tipo_documento = tipoFilter;
+      if (unassignedFilter) params.unassigned = true;
+      params.is_contratto = false;
+      const all = await getDocumenti({ ...params, limit: 500 });
+      const allFiltered = all.filter((doc) => {
+        if (macroCategoriaFilter && doc.macro_categoria !== macroCategoriaFilter) return false;
+        if (annoFilter && String(doc.anno_competenza) !== annoFilter) return false;
+        if (statoFilter === 'verificati' && !doc.verificato_da_utente) return false;
+        if (statoFilter === 'da_verificare' && doc.verificato_da_utente) return false;
+        if (searchFilter) {
+          const q = searchFilter.toLowerCase();
+          if (!doc.file_name.toLowerCase().includes(q) && !(doc.note?.toLowerCase().includes(q) ?? false)) return false;
+        }
+        return true;
+      });
+      setSelectedIds(new Set(allFiltered.map((d) => d.id)));
+    } catch {
+      showToast('Errore nel recupero di tutti i documenti', 'error');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    setBulkDeleting(true);
+    try {
+      const result = await bulkDeleteDocumenti(Array.from(selectedIds));
+      setBulkConfirmOpen(false);
+      setSelectedIds(new Set());
+      await loadDocumenti();
+      const msg = result.failed.length > 0
+        ? `${result.deleted} eliminati, ${result.failed.length} falliti`
+        : `${result.deleted} eliminati con successo`;
+      showToast(msg, result.failed.length > 0 ? 'error' : 'success');
+    } catch {
+      showToast("Errore durante l'eliminazione in massa", 'error');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
 
   const getTipoBadge = (tipo: TipoDocumento) => (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${TIPO_BADGE_CLASSES[tipo]}`}>
@@ -570,6 +633,42 @@ export function DocumentiPage() {
         </div>
         {/* ──────────────────────────────────────────────────────────────── */}
 
+        {/* ─── Bulk action bar ─────────────────────────────────────────── */}
+        {selectedIds.size > 0 && (
+          <div className="mb-3 flex flex-wrap items-center gap-3 px-4 py-2.5 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-xl">
+            <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+              {selectedIds.size} {selectedIds.size === 1 ? 'selezionato' : 'selezionati'}
+            </span>
+            <button
+              onClick={() => setBulkConfirmOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+            >
+              Elimina selezionati
+            </button>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+            >
+              Annulla selezione
+            </button>
+          </div>
+        )}
+
+        {/* Select-all banner — shown when the whole page is selected but more results may exist */}
+        {allPageSelected && documenti.length >= 50 && (
+          <div className="mb-3 flex items-center justify-center gap-2 px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-xl text-sm">
+            <span className="text-gray-700 dark:text-gray-300">
+              Selezionati {selectedIds.size} di questa pagina ·
+            </span>
+            <button
+              onClick={handleSelectAll}
+              className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+            >
+              Seleziona tutti i risultati
+            </button>
+          </div>
+        )}
+
         {/* ─── Mobile card layout ──────────────────────────────────────── */}
         <div className="md:hidden space-y-3">
           {filteredDocumenti.length === 0 ? (
@@ -596,8 +695,19 @@ export function DocumentiPage() {
                   }}
                   className={`rounded-lg border shadow-sm p-4 space-y-2 cursor-pointer ${isUnassigned ? 'bg-red-50/40 border-red-200' : 'bg-white border-gray-200'} ${viewingDocument?.id === doc.id ? 'ring-2 ring-indigo-500' : ''}`}
                 >
-                  {/* Row 1: nome file + stato */}
+                  {/* Row 1: checkbox + nome file + stato */}
                   <div className="flex items-start justify-between gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(doc.id)}
+                      onChange={() => setSelectedIds((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(doc.id)) next.delete(doc.id); else next.add(doc.id);
+                        return next;
+                      })}
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                    />
                     <p className="text-sm font-medium text-gray-900 truncate flex-1">{doc.file_name}</p>
                     {doc.verificato_da_utente ? (
                       <span className="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">✓ Verificato</span>
@@ -676,6 +786,15 @@ export function DocumentiPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
+                    <th className="px-3 py-3 text-left">
+                      <input
+                        type="checkbox"
+                        checked={allPageSelected}
+                        ref={(el) => { if (el) el.indeterminate = somePageSelected; }}
+                        onChange={togglePageSelection}
+                        className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                      />
+                    </th>
                     <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nome file</th>
                     <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tipo Documento</th>
                     <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Macro-Categoria</th>
@@ -693,8 +812,22 @@ export function DocumentiPage() {
                     return (
                       <tr
                         key={doc.id}
-                        className={`${isUnassigned ? 'bg-red-50/40 hover:bg-red-50 dark:bg-red-900/10 dark:hover:bg-red-900/20' : 'hover:bg-gray-50/60 dark:hover:bg-gray-700/30'} transition-colors`}
+                        className={`${isUnassigned ? 'bg-red-50/40 hover:bg-red-50 dark:bg-red-900/10 dark:hover:bg-red-900/20' : 'hover:bg-gray-50/60 dark:hover:bg-gray-700/30'} transition-colors ${selectedIds.has(doc.id) ? 'ring-1 ring-inset ring-indigo-300 dark:ring-indigo-600' : ''}`}
                       >
+                        {/* Checkbox */}
+                        <td className="px-3 py-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(doc.id)}
+                            onChange={() => setSelectedIds((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(doc.id)) next.delete(doc.id); else next.add(doc.id);
+                              return next;
+                            })}
+                            onClick={(e) => e.stopPropagation()}
+                            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                          />
+                        </td>
                         {/* Nome file – click to open PDF drawer */}
                         <td className="px-5 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 max-w-xs" title={doc.file_name}>
                           <button
@@ -811,6 +944,44 @@ export function DocumentiPage() {
       )}
 
       {/* selectedDocumento remains local for now */}
+
+      {/* Bulk delete confirmation modal */}
+      {bulkConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-xl max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Conferma eliminazione</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              Stai per eliminare{' '}
+              <strong className="text-gray-900 dark:text-gray-100">
+                {selectedIds.size} {selectedIds.size === 1 ? 'documento' : 'documenti'}
+              </strong>.{' '}
+              L'operazione non è reversibile.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setBulkConfirmOpen(false)}
+                disabled={bulkDeleting}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+              >
+                Annulla
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                disabled={bulkDeleting}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-50"
+              >
+                {bulkDeleting && (
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                )}
+                {bulkDeleting ? 'Eliminazione...' : 'Elimina'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && (
         <div className="fixed bottom-4 right-4 z-50">

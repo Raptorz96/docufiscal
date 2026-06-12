@@ -5,6 +5,7 @@ from typing import Any, Dict, Generator, Optional
 from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from pydantic import BaseModel, Field
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from starlette.responses import StreamingResponse
@@ -26,6 +27,21 @@ from app.ai.routing import regex_router
 import anyio
 
 router = APIRouter(prefix="/documenti", tags=["documenti"])
+
+
+class BulkDeleteRequest(BaseModel):
+    ids: list[int] = Field(..., min_length=1)
+
+
+async def _do_delete_documento(documento: Documento, db: Session) -> None:
+    """Delete a document's DB record, physical file, and ChromaDB embedding."""
+    file_path = documento.file_path
+    doc_id = documento.id
+    db.delete(documento)
+    db.commit()
+    storage_service.delete_file(file_path)
+    from app.ai.vector_store import vector_store
+    await vector_store.delete_document(doc_id)
 
 
 @router.post(
@@ -408,6 +424,29 @@ def list_documenti(
     return [DocumentoOut.model_validate(d) for d in documenti]
 
 
+@router.post("/bulk-delete", status_code=status.HTTP_200_OK)
+async def bulk_delete_documenti(
+    body: BulkDeleteRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Dict[str, Any]:
+    """Bulk delete documents by ID list. Best-effort: failures are reported, not raised."""
+    deleted = 0
+    failed: list[dict] = []
+    for doc_id in body.ids:
+        try:
+            documento = db.query(Documento).filter(Documento.id == doc_id).first()
+            if not documento:
+                failed.append({"id": doc_id, "error": "Not found"})
+                continue
+            await _do_delete_documento(documento, db)
+            deleted += 1
+        except Exception as exc:
+            db.rollback()
+            failed.append({"id": doc_id, "error": str(exc)})
+    return {"deleted": deleted, "failed": failed}
+
+
 @router.get("/{documento_id}", response_model=DocumentoOut)
 def get_documento(
     documento_id: int,
@@ -661,17 +700,7 @@ async def delete_documento(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Documento {documento_id} not found",
         )
-
-    file_path = documento.file_path
-    db.delete(documento)
-    db.commit()
-
-    storage_service.delete_file(file_path)
-
-    # --- Delete from ChromaDB ---
-    from app.ai.vector_store import vector_store
-    await vector_store.delete_document(documento_id)
-
+    await _do_delete_documento(documento, db)
     return {"detail": "Documento eliminato"}
 
 

@@ -52,6 +52,16 @@ export const deleteDocumento = async (id: number): Promise<void> => {
   await api.delete(`/documenti/${id}`);
 };
 
+export interface BulkDeleteResult {
+  deleted: number;
+  failed: Array<{ id: number; error: string }>;
+}
+
+export const bulkDeleteDocumenti = async (ids: number[]): Promise<BulkDeleteResult> => {
+  const response = await api.post('/documenti/bulk-delete', { ids });
+  return response.data;
+};
+
 export const downloadDocumento = async (id: number, fileName: string): Promise<void> => {
   const response = await api.get(`/documenti/${id}/download`, {
     responseType: 'blob',

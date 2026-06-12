@@ -280,11 +280,6 @@ async def chat_query_endpoint(
             except Exception:
                 logger.warning("Failed to parse referenced_doc_ids from AI response.")
 
-        # Fallback: find IDs in the text like [ID: 123]
-        if not referenced_doc_ids:
-            matches = re.findall(r"\[ID: (\d+)\]", full_answer)
-            referenced_doc_ids = list(set(int(m) for m in matches))
-
         # 6. Execute calendar action and append result to answer
         if calendar_action_json and calendar_enabled:
             calendar_result = _execute_calendar_action(db, current_user.id, calendar_action_json)

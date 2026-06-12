@@ -30,3 +30,13 @@ export const updateContratto = async (id: number, data: ContrattoUpdate): Promis
 export const deleteContratto = async (id: number): Promise<void> => {
   await api.delete(`/contratti/${id}`);
 };
+
+export interface BulkDeleteResult {
+  deleted: number;
+  failed: Array<{ id: number; error: string }>;
+}
+
+export const bulkDeleteContratti = async (ids: number[]): Promise<BulkDeleteResult> => {
+  const response = await api.post('/contratti/bulk-delete', { ids });
+  return response.data;
+};
