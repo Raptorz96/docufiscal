@@ -60,6 +60,6 @@ def test_list_scadenze_requires_auth(fake_scadenza):
     """Endpoint requires authentication."""
     from fastapi.testclient import TestClient
     from app.main import app
-    c = TestClient(app)
-    response = c.get("/api/v1/scadenze")
-    assert response.status_code == 401
+    with TestClient(app) as client:
+        response = client.get("/api/v1/scadenze")
+        assert response.status_code == 401
