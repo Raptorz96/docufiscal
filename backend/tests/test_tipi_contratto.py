@@ -1,4 +1,7 @@
 """Tests for /api/v1/tipi-contratto endpoints."""
+from collections.abc import Iterator
+from contextlib import contextmanager
+
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -7,11 +10,16 @@ from app.core.database import get_db
 from app.models.tipo_contratto import TipoContratto
 
 
-def _unauthenticated_client(db: Session) -> TestClient:
+@contextmanager
+def _unauthenticated_client(db: Session) -> Iterator[TestClient]:
     def _override_get_db():
         yield db
     app.dependency_overrides[get_db] = _override_get_db
-    return TestClient(app, raise_server_exceptions=False)
+    try:
+        with TestClient(app, raise_server_exceptions=False) as client:
+            yield client
+    finally:
+        app.dependency_overrides.clear()
 
 
 class TestTipiContratto:
@@ -83,9 +91,6 @@ class TestTipiContratto:
         assert resp.status_code == 204
 
     def test_list_tipi_contratto_unauthenticated(self, db: Session) -> None:
-        tc = _unauthenticated_client(db)
-        try:
+        with _unauthenticated_client(db) as tc:
             resp = tc.get("/api/v1/tipi-contratto")
             assert resp.status_code == 401
-        finally:
-            app.dependency_overrides.clear()

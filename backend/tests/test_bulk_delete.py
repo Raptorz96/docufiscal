@@ -1,4 +1,6 @@
 """Tests for POST /api/v1/documenti/bulk-delete and POST /api/v1/contratti/bulk-delete."""
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import date
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -50,7 +52,8 @@ def _make_contratto(db: Session, cliente_id: int, tipo_contratto_id: int) -> Con
     return c
 
 
-def _unauthenticated_client(db: Session) -> TestClient:
+@contextmanager
+def _unauthenticated_client(db: Session) -> Iterator[TestClient]:
     from app.main import app
     from app.core.database import get_db
 
@@ -58,7 +61,11 @@ def _unauthenticated_client(db: Session) -> TestClient:
         yield db
 
     app.dependency_overrides[get_db] = _override_get_db
-    return TestClient(app, raise_server_exceptions=False)
+    try:
+        with TestClient(app, raise_server_exceptions=False) as client:
+            yield client
+    finally:
+        app.dependency_overrides.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -123,13 +130,9 @@ class TestBulkDeleteDocumenti:
 
     def test_bulk_delete_unauthenticated(self, db: Session, fake_cliente: Cliente) -> None:
         d1 = _make_documento(db, fake_cliente.id, "auth.pdf")
-        tc = _unauthenticated_client(db)
-        try:
+        with _unauthenticated_client(db) as tc:
             resp = tc.post("/api/v1/documenti/bulk-delete", json={"ids": [d1.id]})
             assert resp.status_code == 401
-        finally:
-            from app.main import app
-            app.dependency_overrides.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -181,10 +184,6 @@ class TestBulkDeleteContratti:
         db.commit()
         db.refresh(cliente)
         c1 = _make_contratto(db, cliente.id, tc_obj.id)
-        uc = _unauthenticated_client(db)
-        try:
+        with _unauthenticated_client(db) as uc:
             resp = uc.post("/api/v1/contratti/bulk-delete", json={"ids": [c1.id]})
             assert resp.status_code == 401
-        finally:
-            from app.main import app
-            app.dependency_overrides.clear()

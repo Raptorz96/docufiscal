@@ -1,4 +1,7 @@
 """Tests for authentication endpoints: register, login, me."""
+from contextlib import contextmanager
+from collections.abc import Iterator
+
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -10,12 +13,17 @@ from app.core.database import get_db
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _raw_client(db: Session) -> TestClient:
+@contextmanager
+def _raw_client(db: Session) -> Iterator[TestClient]:
     """TestClient with only get_db overridden — no auth bypass."""
     def _override_get_db():
         yield db
     app.dependency_overrides[get_db] = _override_get_db
-    return TestClient(app, raise_server_exceptions=False)
+    try:
+        with TestClient(app, raise_server_exceptions=False) as client:
+            yield client
+    finally:
+        app.dependency_overrides.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -25,8 +33,7 @@ def _raw_client(db: Session) -> TestClient:
 class TestRegister:
 
     def test_register_success(self, db: Session) -> None:
-        tc = _raw_client(db)
-        try:
+        with _raw_client(db) as tc:
             resp = tc.post("/api/v1/auth/register", json={
                 "email": "nuovo@docufiscal.it",
                 "password": "password123",
@@ -38,12 +45,9 @@ class TestRegister:
             assert data["email"] == "nuovo@docufiscal.it"
             assert data["nome"] == "Luca"
             assert data["cognome"] == "Verdi"
-        finally:
-            app.dependency_overrides.clear()
 
     def test_register_short_password(self, db: Session) -> None:
-        tc = _raw_client(db)
-        try:
+        with _raw_client(db) as tc:
             resp = tc.post("/api/v1/auth/register", json={
                 "email": "short@docufiscal.it",
                 "password": "ab",
@@ -51,12 +55,9 @@ class TestRegister:
                 "cognome": "User",
             })
             assert resp.status_code == 422
-        finally:
-            app.dependency_overrides.clear()
 
     def test_register_duplicate_email(self, db: Session) -> None:
-        tc = _raw_client(db)
-        try:
+        with _raw_client(db) as tc:
             payload = {
                 "email": "dup@docufiscal.it",
                 "password": "password123",
@@ -66,8 +67,6 @@ class TestRegister:
             tc.post("/api/v1/auth/register", json=payload)
             resp = tc.post("/api/v1/auth/register", json=payload)
             assert resp.status_code == 409
-        finally:
-            app.dependency_overrides.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -77,8 +76,7 @@ class TestRegister:
 class TestLogin:
 
     def test_login_success(self, db: Session) -> None:
-        tc = _raw_client(db)
-        try:
+        with _raw_client(db) as tc:
             # Register a user with a real password hash first
             tc.post("/api/v1/auth/register", json={
                 "email": "login_ok@docufiscal.it",
@@ -94,12 +92,9 @@ class TestLogin:
             data = resp.json()
             assert "access_token" in data
             assert data["token_type"] == "bearer"
-        finally:
-            app.dependency_overrides.clear()
 
     def test_login_wrong_password(self, db: Session) -> None:
-        tc = _raw_client(db)
-        try:
+        with _raw_client(db) as tc:
             tc.post("/api/v1/auth/register", json={
                 "email": "login_bad@docufiscal.it",
                 "password": "correct_password",
@@ -111,19 +106,14 @@ class TestLogin:
                 "password": "wrong_password",
             })
             assert resp.status_code == 401
-        finally:
-            app.dependency_overrides.clear()
 
     def test_login_nonexistent_email(self, db: Session) -> None:
-        tc = _raw_client(db)
-        try:
+        with _raw_client(db) as tc:
             resp = tc.post("/api/v1/auth/login", data={
                 "username": "nonexistent@docufiscal.it",
                 "password": "anypassword",
             })
             assert resp.status_code == 401
-        finally:
-            app.dependency_overrides.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -141,12 +131,9 @@ class TestMe:
         assert "cognome" in data
 
     def test_me_unauthenticated(self, db: Session) -> None:
-        tc = _raw_client(db)
-        try:
+        with _raw_client(db) as tc:
             resp = tc.get("/api/v1/auth/me")
             assert resp.status_code == 401
-        finally:
-            app.dependency_overrides.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -199,9 +186,9 @@ class TestUpdateProfile:
 
         app.dependency_overrides[get_db] = _override
         try:
-            tc = TestClient(app, raise_server_exceptions=False)
-            resp = tc.patch("/api/v1/auth/me", json={"nome": "X"})
-            assert resp.status_code == 401
+            with TestClient(app, raise_server_exceptions=False) as tc:
+                resp = tc.patch("/api/v1/auth/me", json={"nome": "X"})
+                assert resp.status_code == 401
         finally:
             app.dependency_overrides.clear()
 
@@ -221,18 +208,20 @@ class TestChangePassword:
             yield db
 
         app.dependency_overrides[get_db] = _override
-        tc = TestClient(app, raise_server_exceptions=False)
-        tc.post("/api/v1/auth/register", json={
-            "email": "pwchange@docufiscal.it",
-            "password": "OldPassword1",
-            "nome": "Test",
-            "cognome": "User",
-        })
-        resp = tc.post("/api/v1/auth/login", data={
-            "username": "pwchange@docufiscal.it",
-            "password": "OldPassword1",
-        })
-        app.dependency_overrides.clear()
+        try:
+            with TestClient(app, raise_server_exceptions=False) as tc:
+                tc.post("/api/v1/auth/register", json={
+                    "email": "pwchange@docufiscal.it",
+                    "password": "OldPassword1",
+                    "nome": "Test",
+                    "cognome": "User",
+                })
+                resp = tc.post("/api/v1/auth/login", data={
+                    "username": "pwchange@docufiscal.it",
+                    "password": "OldPassword1",
+                })
+        finally:
+            app.dependency_overrides.clear()
         return resp.json()["access_token"]
 
     def test_change_password_success(self, db) -> None:
@@ -246,14 +235,14 @@ class TestChangePassword:
 
         app.dependency_overrides[get_db] = _override
         try:
-            tc = TestClient(app, raise_server_exceptions=False)
-            resp = tc.post(
-                "/api/v1/auth/change-password",
-                json={"current_password": "OldPassword1", "new_password": "NewPassword2"},
-                headers={"Authorization": f"Bearer {token}"},
-            )
-            assert resp.status_code == 200
-            assert resp.json()["detail"] == "Password aggiornata con successo"
+            with TestClient(app, raise_server_exceptions=False) as tc:
+                resp = tc.post(
+                    "/api/v1/auth/change-password",
+                    json={"current_password": "OldPassword1", "new_password": "NewPassword2"},
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+                assert resp.status_code == 200
+                assert resp.json()["detail"] == "Password aggiornata con successo"
         finally:
             app.dependency_overrides.clear()
 
@@ -268,14 +257,14 @@ class TestChangePassword:
 
         app.dependency_overrides[get_db] = _override
         try:
-            tc = TestClient(app, raise_server_exceptions=False)
-            resp = tc.post(
-                "/api/v1/auth/change-password",
-                json={"current_password": "WrongPassword", "new_password": "NewPassword2"},
-                headers={"Authorization": f"Bearer {token}"},
-            )
-            assert resp.status_code == 400
-            assert "corrente" in resp.json()["detail"]
+            with TestClient(app, raise_server_exceptions=False) as tc:
+                resp = tc.post(
+                    "/api/v1/auth/change-password",
+                    json={"current_password": "WrongPassword", "new_password": "NewPassword2"},
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+                assert resp.status_code == 400
+                assert "corrente" in resp.json()["detail"]
         finally:
             app.dependency_overrides.clear()
 
@@ -290,14 +279,14 @@ class TestChangePassword:
 
         app.dependency_overrides[get_db] = _override
         try:
-            tc = TestClient(app, raise_server_exceptions=False)
-            resp = tc.post(
-                "/api/v1/auth/change-password",
-                json={"current_password": "OldPassword1", "new_password": "short"},
-                headers={"Authorization": f"Bearer {token}"},
-            )
-            assert resp.status_code == 400
-            assert "8" in resp.json()["detail"]
+            with TestClient(app, raise_server_exceptions=False) as tc:
+                resp = tc.post(
+                    "/api/v1/auth/change-password",
+                    json={"current_password": "OldPassword1", "new_password": "short"},
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+                assert resp.status_code == 400
+                assert "8" in resp.json()["detail"]
         finally:
             app.dependency_overrides.clear()
 
@@ -310,11 +299,11 @@ class TestChangePassword:
 
         app.dependency_overrides[get_db] = _override
         try:
-            tc = TestClient(app, raise_server_exceptions=False)
-            resp = tc.post(
-                "/api/v1/auth/change-password",
-                json={"current_password": "any", "new_password": "anypassword"},
-            )
-            assert resp.status_code == 401
+            with TestClient(app, raise_server_exceptions=False) as tc:
+                resp = tc.post(
+                    "/api/v1/auth/change-password",
+                    json={"current_password": "any", "new_password": "anypassword"},
+                )
+                assert resp.status_code == 401
         finally:
             app.dependency_overrides.clear()

@@ -1,4 +1,7 @@
 """Tests for /api/v1/contratti endpoints."""
+from collections.abc import Iterator
+from contextlib import contextmanager
+
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -28,11 +31,16 @@ def _make_cliente(db: Session, nome: str = "Cliente Test") -> Cliente:
     return c
 
 
-def _unauthenticated_client(db: Session) -> TestClient:
+@contextmanager
+def _unauthenticated_client(db: Session) -> Iterator[TestClient]:
     def _override_get_db():
         yield db
     app.dependency_overrides[get_db] = _override_get_db
-    return TestClient(app, raise_server_exceptions=False)
+    try:
+        with TestClient(app, raise_server_exceptions=False) as client:
+            yield client
+    finally:
+        app.dependency_overrides.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -156,9 +164,6 @@ class TestContratti:
         assert resp.status_code == 204
 
     def test_list_contratti_unauthenticated(self, db: Session) -> None:
-        tc = _unauthenticated_client(db)
-        try:
+        with _unauthenticated_client(db) as tc:
             resp = tc.get("/api/v1/contratti")
             assert resp.status_code == 401
-        finally:
-            app.dependency_overrides.clear()
