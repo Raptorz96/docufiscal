@@ -12,7 +12,7 @@ import {
 import { formatFileSize, formatDate } from '@/utils/formatters';
 import { UploadDocumentoModal } from '@/components/UploadDocumentoModal';
 import { ClassificazioneModal } from '@/components/ClassificazioneModal';
-import { useDocument } from '@/context/DocumentContext';
+import { useDocument } from '@/context/documentContext';
 import type { Documento, TipoDocumento } from '@/types/documento';
 
 type StatoFilter = 'tutti' | 'da_verificare' | 'verificati';
@@ -48,7 +48,7 @@ export function DocumentiPage() {
 
   const clientiMap = useRef<Map<number, string>>(new Map());
   const isInitialMount = useRef(true);
-  const toastTimeout = useRef<any>(null);
+  const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
     if (toastTimeout.current) clearTimeout(toastTimeout.current);

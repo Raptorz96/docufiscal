@@ -1,7 +1,7 @@
 import { useState, type FC, type ReactNode, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useDocument } from '../context/DocumentContext';
+import { useAuth } from '../context/authContext';
+import { useDocument } from '../context/documentContext';
 import { PdfDrawer } from '../components/PdfDrawer';
 import { DocumentChatbot } from '../components/DocumentChatbot';
 import { Omnibox } from '../components/Omnibox';

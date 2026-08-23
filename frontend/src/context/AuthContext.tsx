@@ -1,25 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { User, LoginCredentials } from '../types/auth';
 import * as authService from '../services/authService';
-
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => void;
-  refreshUser: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+import { AuthContext, type AuthContextType } from './authContext';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -48,14 +30,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = async (credentials: LoginCredentials): Promise<void> => {
-    try {
-      const response = await authService.login(credentials);
-      authService.saveToken(response.access_token);
-      const userData = await authService.getMe();
-      setUser(userData);
-    } catch (error) {
-      throw error;
-    }
+    const response = await authService.login(credentials);
+    authService.saveToken(response.access_token);
+    const userData = await authService.getMe();
+    setUser(userData);
   };
 
   const logout = (): void => {

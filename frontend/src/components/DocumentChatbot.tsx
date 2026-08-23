@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Send, X, FileText, ChevronDown, User, Bot, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { useDocument } from '../context/DocumentContext';
+import { useDocument } from '../context/documentContext';
 import api from '../services/api';
 
 interface Message {

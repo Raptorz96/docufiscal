@@ -1,20 +1,10 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { useState, useCallback, type ReactNode } from 'react';
 import type { Documento } from '../types/documento';
 import { getClienti } from '../services/clientiService';
 import { getContratti } from '../services/contrattiService';
 import type { Cliente } from '../types/cliente';
 import type { Contratto } from '../types/contratto';
-
-interface DocumentContextType {
-    viewingDocument: Documento | null;
-    setViewingDocument: (doc: Documento | null) => void;
-    openDocumentById: (docId: number) => Promise<void>;
-    clienti: Cliente[];
-    contratti: Contratto[];
-    refreshSupportData: () => Promise<void>;
-}
-
-const DocumentContext = createContext<DocumentContextType | undefined>(undefined);
+import { DocumentContext } from './documentContext';
 
 export function DocumentProvider({ children }: { children: ReactNode }) {
     const [viewingDocument, setViewingDocument] = useState<Documento | null>(null);
@@ -62,12 +52,4 @@ export function DocumentProvider({ children }: { children: ReactNode }) {
             {children}
         </DocumentContext.Provider>
     );
-}
-
-export function useDocument() {
-    const context = useContext(DocumentContext);
-    if (context === undefined) {
-        throw new Error('useDocument must be used within a DocumentProvider');
-    }
-    return context;
 }

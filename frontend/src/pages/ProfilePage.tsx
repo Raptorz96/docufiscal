@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AxiosError } from 'axios';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/authContext';
 import * as authService from '../services/authService';
 import * as googleService from '../services/googleService';
 
