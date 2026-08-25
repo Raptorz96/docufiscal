@@ -27,6 +27,8 @@ export function PdfDrawer({ documento, clienti, contratti, onClose, onSuccess }:
     const [pdfError, setPdfError] = useState<string | null>(null);
     const [confirmingId, setConfirmingId] = useState<number | null>(null);
     const [showModifica, setShowModifica] = useState(false);
+    const documentoId = documento?.id;
+    const documentoMimeType = documento?.mime_type;
 
     // ─── Blob URL lifecycle ────────────────────────────────────────────────────
     // This is the critical section the user asked about.
@@ -43,14 +45,14 @@ export function PdfDrawer({ documento, clienti, contratti, onClose, onSuccess }:
     // Net result: at most ONE live ObjectURL at any given moment.
     useEffect(() => {
         // Nothing to do if the drawer is closed
-        if (documento === null) {
+        if (documentoId === undefined) {
             setBlobUrl(null);
             setPdfError(null);
             return;
         }
 
         // Only try to load PDFs; show a clear message for other types
-        if (documento.mime_type !== 'application/pdf') {
+        if (documentoMimeType !== 'application/pdf') {
             setBlobUrl(null);
             setPdfError('Anteprima non disponibile per questo tipo di file.');
             return;
@@ -63,7 +65,7 @@ export function PdfDrawer({ documento, clienti, contratti, onClose, onSuccess }:
             setLoadingPdf(true);
             setPdfError(null);
             try {
-                const url = await getDocumentoBlobUrl(documento.id);
+                const url = await getDocumentoBlobUrl(documentoId);
                 if (!cancelled) {
                     createdUrl = url;
                     setBlobUrl(url);
@@ -95,7 +97,7 @@ export function PdfDrawer({ documento, clienti, contratti, onClose, onSuccess }:
             }
             setBlobUrl(null);
         };
-    }, [documento?.id]); // re-run only when the selected document ID changes
+    }, [documentoId, documentoMimeType]);
 
     // ─── Actions ──────────────────────────────────────────────────────────────
     const handleConferma = useCallback(async () => {
