@@ -1,128 +1,139 @@
 # DocuFiscal
 
-Dashboard per commercialisti con classificazione automatica dei documenti tramite intelligenza artificiale.
+DocuFiscal è un'applicazione per studi professionali e commercialisti che centralizza clienti, contratti, documenti e scadenze. Integra classificazione documentale tramite AI, estrazione delle scadenze, ricerca semantica e consultazione RAG con riferimenti ai documenti.
 
-## Stack Tecnologico
+## Funzionalità principali
 
-- **Frontend**: React + TypeScript + Vite + TailwindCSS
-- **Backend**: FastAPI + SQLAlchemy + Alembic
-- **Database**: SQLite (sviluppo) / PostgreSQL (Docker)
-- **AI**: Claude API per classificazione documenti
-- **Autenticazione**: JWT con OAuth2
+- Gestione di clienti, tipi di contratto e contratti.
+- Upload, classificazione AI e associazione dei documenti.
+- Gestione dei documenti non ancora assegnati a un cliente.
+- Estrazione e consultazione delle scadenze documentali e contrattuali.
+- Ricerca semantica globale tramite Omnibox.
+- Chatbot RAG con riferimenti ai documenti.
+- Anteprima PDF tramite drawer.
+- Eliminazione bulk di documenti e contratti.
+- Autenticazione JWT e gestione del profilo.
+- Integrazione opzionale con Google Calendar.
+- Interfaccia responsive con dark mode.
 
-## Prerequisiti
+## Stack
 
-- Node.js 20.19+ o 22.12+
-- Python 3.11+
-- Docker (opzionale)
+- **Frontend:** React 19, TypeScript, Vite e Tailwind CSS.
+- **Backend:** FastAPI, SQLAlchemy 2.x e Alembic.
+- **Database:** SQLite in locale, PostgreSQL con Docker Compose.
+- **Storage:** filesystem persistente.
+- **AI:** provider configurabile, con Gemini come default corrente.
+- **RAG:** ChromaDB ed embedding `all-MiniLM-L6-v2`.
+- **Integrazioni:** Google Calendar OAuth2.
 
-## Setup Locale (senza Docker)
+## Requisiti locali
 
-### 1. Clonare il repository
+- Node.js `22.22.2`, versione canonica definita in `.nvmrc`.
+- Python 3.11+.
+- NVM consigliato.
+- Docker e Docker Compose opzionali.
+
+Il progetto non fissa attualmente una versione npm tramite `packageManager` o `engines`. La baseline verificata ha usato npm `10.9.7`.
+
+Per selezionare Node e verificare le versioni:
+
 ```bash
-git clone <repository-url>
-cd DocuFiscal
+nvm use
+node -v
+npm -v
 ```
 
-### 2. Backend
+## Avvio locale
+
+### Backend
+
 ```bash
 cd backend
-
-# Creare ambiente virtuale
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# oppure
-venv\Scripts\activate     # Windows
-
-# Installare dipendenze
-pip install -r requirements.txt
-
-# Configurare variabili ambiente
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 cp .env.example .env
-# Modificare .env con le proprie configurazioni
-
-# Eseguire migrazioni database
 alembic upgrade head
-
-# Avviare server
 uvicorn app.main:app --reload
 ```
-Backend disponibile su: http://localhost:8000
 
-### 3. Frontend
+Su Windows, il comando di attivazione dell'ambiente virtuale è:
+
 ```bash
+.venv\Scripts\activate
+```
+
+Il backend è disponibile su `http://localhost:8000`; la documentazione OpenAPI è disponibile su `http://localhost:8000/docs`.
+
+### Frontend
+
+In un secondo terminale, dalla root del repository:
+
+```bash
+nvm use
 cd frontend
-
-# Installare dipendenze
-npm install
-
-# Avviare server sviluppo
+npm ci
 npm run dev
 ```
-Frontend disponibile su: http://localhost:5173
 
-### 4. Primo utente
-1. Aprire http://localhost:8000/docs (Swagger UI)
-2. Usare endpoint `POST /api/v1/auth/register` per creare il primo utente
-3. Accedere al frontend con le credenziali create
+Il frontend è disponibile su `http://localhost:5173`.
 
-## Setup Docker (opzionale)
+### Primo accesso
+
+Se il database non contiene utenti:
+
+1. aprire `http://localhost:8000/docs`;
+2. usare `POST /api/v1/auth/register`;
+3. accedere dal frontend con le credenziali create.
+
+## Avvio con Docker
 
 ```bash
-# Configurare variabili ambiente
 cp .env.example .env
-# Modificare DATABASE_URL per PostgreSQL:
-# DATABASE_URL=postgresql://docufiscal:docufiscal@db:5432/docufiscal
-
-# Avviare stack completo
-docker-compose up --build
+docker compose up --build
 ```
 
-- Frontend: http://localhost:5173
-- Backend: http://localhost:8000
-- Database: PostgreSQL su porta 5432
+Il file `.env.example` nella root è una base storica per Docker Compose e deve essere revisionato prima dell'uso, perché non rappresenta tutta la configurazione AI corrente.
 
-## Struttura Progetto
+## Configurazione
 
-```
-DocuFiscal/
-├── backend/
-│   ├── app/
-│   │   ├── api/           # Endpoints REST
-│   │   ├── core/          # Config, security, database
-│   │   ├── models/        # Modelli SQLAlchemy
-│   │   └── schemas/       # Schemi Pydantic
-│   ├── alembic/           # Migrazioni database
-│   └── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   ├── components/    # Componenti React
-│   │   ├── pages/         # Pagine applicazione
-│   │   ├── services/      # API client
-│   │   ├── context/       # Context providers
-│   │   └── types/         # Tipi TypeScript
-│   └── package.json
-└── docker-compose.yml
+- `.env.example` nella root è la base storica usata per Docker Compose, ma è attualmente incompleto rispetto alla configurazione AI.
+- `backend/.env.example` è la base per il backend locale.
+- Entrambi i file example devono essere revisionati prima dell'uso.
+- Le credenziali reali non devono essere versionate.
+
+Gemini è il provider AI predefinito. `AI_PROVIDER` seleziona un singolo provider e non esiste una fallback chain automatica Gemini → Claude → OpenAI.
+
+## Verifiche
+
+Backend:
+
+```bash
+cd backend
+python -m pytest
 ```
 
-## Stato Sviluppo
+Frontend:
 
-✅ **Fase 1 - Setup e Autenticazione**
-- Configurazione progetti frontend e backend
-- Sistema autenticazione JWT completo
-- Setup Docker con PostgreSQL
-- Dashboard base con protezione route
+```bash
+nvm use
+cd frontend
+npm run lint
+npm run build
+```
 
-🚧 **Prossime fasi**
-- Upload e gestione documenti
-- Integrazione Claude API per classificazione
-- Dashboard analytics per commercialisti
+Baseline verificata durante la migrazione:
 
-## Endpoints API
+- backend: 80/80 test passing;
+- frontend lint: 0 errori / 0 warning;
+- frontend build: PASS;
+- npm usato nella baseline: `10.9.7`.
 
-- `POST /api/v1/auth/register` - Registrazione utente
-- `POST /api/v1/auth/login` - Login utente
-- `GET /api/v1/auth/me` - Profilo utente corrente
-- `GET /api/v1/health` - Health check
+Questi valori descrivono la baseline verificata, non requisiti permanenti del progetto.
 
-Documentazione completa: http://localhost:8000/docs
+## Documentazione
+
+- [`docs/PROJECT_CONTEXT.md`](docs/PROJECT_CONTEXT.md) — contesto tecnico canonico.
+- [`docs/ROADMAP_V2.md`](docs/ROADMAP_V2.md) — roadmap storica, non fonte dello stato corrente.
+
+In caso di divergenza documentale prevalgono la codebase e i test, quindi `docs/PROJECT_CONTEXT.md`.
