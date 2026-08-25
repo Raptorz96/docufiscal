@@ -104,22 +104,20 @@ export function ContrattiPage() {
   }, [clienteFilter, tipoContrattoFilter, statoFilter]);
 
   useEffect(() => {
-    const initializeData = async () => {
-      await loadSupportData();
-      await Promise.all([loadContratti(), loadContrattiDocumenti()]);
-    };
-    initializeData();
-  }, []);
-
-  useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
+
+      const initializeData = async () => {
+        await loadSupportData();
+        await Promise.all([loadContratti(), loadContrattiDocumenti()]);
+      };
+      initializeData();
       return;
     }
+
     loadContratti();
     setSelectedIds(new Set());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clienteFilter, tipoContrattoFilter, statoFilter]);
+  }, [loadSupportData, loadContratti, loadContrattiDocumenti]);
 
   const allSelected = contratti.length > 0 && contratti.every((c) => selectedIds.has(c.id));
   const someSelected = contratti.some((c) => selectedIds.has(c.id)) && !allSelected;
