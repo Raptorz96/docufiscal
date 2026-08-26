@@ -66,7 +66,8 @@ Gemini, Claude e OpenAI catturano normalmente gli errori delle chiamate di class
 `Scadenza` è il modello unico per scadenze documentali e contratti manuali. Può contenere data iniziale/finale, tipo, descrizione, importo o canone, durata, rinnovo automatico, preavviso, parti, clausole, confidenza e stato di verifica.
 
 - I documenti assegnati possono produrre una scadenza generica tramite estrazione AI.
-- I documenti contrattuali ricevono un secondo passaggio di estrazione strutturata, che arricchisce la scadenza già trovata o ne crea una nuova.
+- `documento_id` e `contratto_id` sono nullable ma unique: un singolo `Documento` e un singolo `Contratto` possono avere ciascuno al massimo una `Scadenza` associata.
+- I documenti contrattuali ricevono un secondo passaggio di estrazione strutturata, che arricchisce la scadenza già creata dall'estrazione generica quando esiste, invece di crearne una seconda.
 - La creazione o modifica di un `Contratto` manuale sincronizza una scadenza verificata quando è presente `data_fine`; la rimuove se la data finale viene eliminata.
 - L'API scadenze espone elenco, ricerca e filtri su cliente, tipo, intervallo date e verifica.
 
