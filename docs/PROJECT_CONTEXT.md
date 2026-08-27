@@ -148,7 +148,6 @@ L'hosting production effettivo è **da confermare**: la documentazione storica �
 - `CONFIDENCE_THRESHOLD` vale `0.80` nel default applicativo ma `0.75` in `backend/.env.example`.
 - `_pending_states` per Google OAuth è in-memory e non adatto senza revisione a deployment multi-instance.
 - Restano commenti e docstring Claude-centrici anche se Gemini è il provider predefinito.
-- Il README descrive ancora Claude come AI principale e contiene sezioni di avanzamento non allineate alle funzionalità correnti.
 - Il file `.env.example` nella root è obsoleto e incompleto rispetto all'architettura AI corrente: documenta ancora solo `CLAUDE_API_KEY` tra le API esterne e non espone variabili correnti come `AI_PROVIDER`, `AI_MODEL`, `AI_API_KEY` e le configurazioni Gemini/OpenAI.
 - `backend/requirements.txt` non contiene il package `openai`, anche se `backend/app/ai/openai_classifier.py` importa `OpenAI` e `AsyncOpenAI`. In un'installazione pulita il provider OpenAI non è quindi garantito funzionante.
 - Alcuni `eslint-disable-next-line react-hooks/exhaustive-deps` restano in `ClientiPage.tsx` e `DocumentiPage.tsx`; richiedono un audit separato, non una rimozione meccanica.
@@ -162,7 +161,6 @@ L'hosting production effettivo è **da confermare**: la documentazione storica �
 Sono fonti storiche:
 
 - `CLAUDE.md`;
-- `docs/ROADMAP_V2.md`;
 - il precedente Project Knowledge e le roadmap Claude;
 - `docs/superpowers/plans/`;
 - `docs/superpowers/specs/`.
