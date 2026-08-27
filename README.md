@@ -134,6 +134,6 @@ Questi valori descrivono la baseline verificata, non requisiti permanenti del pr
 ## Documentazione
 
 - [`docs/PROJECT_CONTEXT.md`](docs/PROJECT_CONTEXT.md) — contesto tecnico canonico.
-- [`docs/ROADMAP_V2.md`](docs/ROADMAP_V2.md) — roadmap storica, non fonte dello stato corrente.
+- [`docs/ROADMAP_V2.md`](docs/ROADMAP_V2.md) — backlog ed evoluzioni candidate, non fonte dello stato corrente.
 
 In caso di divergenza documentale prevalgono la codebase e i test, quindi `docs/PROJECT_CONTEXT.md`.
