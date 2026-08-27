@@ -158,11 +158,4 @@ L'hosting production effettivo è **da confermare**: la documentazione storica �
 
 ## 14. Documentazione storica
 
-Sono fonti storiche:
-
-- `CLAUDE.md`;
-- il precedente Project Knowledge e le roadmap Claude;
-- `docs/superpowers/plans/`;
-- `docs/superpowers/specs/`.
-
-Queste fonti conservano decisioni, motivazioni e piani precedenti, ma possono descrivere funzionalità non ancora implementate, già superate o configurazioni non più correnti. Dopo la migrazione non devono prevalere su `docs/PROJECT_CONTEXT.md` e sulla codebase verificata dai test.
+La documentazione, il precedente Project Knowledge e i piani e le roadmap Claude restano disponibili nella storia Git. Possono descrivere funzionalità non ancora implementate, già superate o configurazioni non più correnti e non costituiscono una fonte canonica corrente. Dopo la migrazione non devono prevalere su `docs/PROJECT_CONTEXT.md` e sulla codebase verificata dai test.
