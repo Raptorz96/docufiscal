@@ -1,0 +1,6 @@
+#!/bin/sh
+# Block .env files being ADDED or MODIFIED (not deleted)
+if git diff --cached --name-only --diff-filter=ACM | grep -E '\.env($|\.[^e]|\.e[^x]|\.ex[^a])' | grep -v '\.env\.example'; then
+  echo "ERROR: Attempting to commit .env file with potential secrets. Blocked."
+  exit 1
+fi
